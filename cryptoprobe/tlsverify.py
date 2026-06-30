@@ -61,10 +61,15 @@ def _record_from_raw(method_suffix: str, raw: rawprobe.RawOutcome) -> HandshakeR
 
 
 def validate(host: str, port: int = 443, *, timeout: float = 8.0,
-             do_completed: bool = True) -> ProbeResult:
+             do_completed: bool = True, limiter=None) -> ProbeResult:
     result = ProbeResult(host=host, port=port)
 
+    def wait():
+        if limiter is not None:
+            limiter.wait()
+
     # 1. default raw probe -----------------------------------------------------
+    wait()
     raw = rawprobe.probe_offer(host, port, rawprobe.DEFAULT_OFFER, timeout=timeout)
     result.handshakes.append(_record_from_raw("default-offer", raw))
     if raw.error and raw.selected_group is None and raw.negotiated_version is None:
@@ -91,6 +96,7 @@ def validate(host: str, port: int = 443, *, timeout: float = 8.0,
 
     # 2. explicit hybrids-only probe if we didn't already see a hybrid ---------
     if result.is_tls13 and not group.supports_hybrid_pqc:
+        wait()
         hy = rawprobe.probe_offer(host, port, rawprobe.HYBRID_GROUPS, timeout=timeout)
         result.handshakes.append(_record_from_raw("hybrids-only", hy))
         hg = NamedGroup.from_code(hy.selected_group) if hy.selected_group else None
@@ -104,12 +110,14 @@ def validate(host: str, port: int = 443, *, timeout: float = 8.0,
     result.group = group
 
     # 3. certificate inspection -----------------------------------------------
+    wait()
     result.cert = _fetch_cert(host, port, timeout)
 
     # 4. completed handshake via openssl --------------------------------------
     if do_completed:
         cap = handshake.capability()
         if cap.available:
+            wait()
             # Offer CryptoProbe's documented hybrid-first order so the negotiated
             # group (and thus prefers_pqc) reflects DEFAULT_OFFER, not openssl's.
             rec = handshake.complete_handshake(

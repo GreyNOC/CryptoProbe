@@ -62,6 +62,7 @@ def _chk_classical_is_vulnerable():
     # A server with no PQC path that still completes classical -> CLASSICAL_ONLY.
     v, strippable, _ = downgrade_mod._derive(
         supports_pqc=False, prefers_pqc=False, classical_accepted=True,
+        classical_refused=False,
         raw_pqc=RawOutcome(offered_groups=()), raw_cl=RawOutcome(offered_groups=()))
     ok = v is DowngradeVerdict.CLASSICAL_ONLY and v.severity.value == "CRITICAL"
     return ok, "classical-only key establishment -> CLASSICAL_ONLY (CRITICAL)"

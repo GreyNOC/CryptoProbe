@@ -137,6 +137,39 @@ def test_reenrich_merge_policy(tmp_path):
     assert ep2["cryptoProperties"]["protocolProperties"]["version"] == "1.3"
 
 
+def test_extract_targets(tmp_path):
+    # finding #12: derive probe targets from a CBOM's protocol endpoints.
+    import json
+
+    def proto(ref, locator=None, occ=None, ptype="tls"):
+        c = {"type": "cryptographic-asset", "bom-ref": ref,
+             "cryptoProperties": {"assetType": "protocol",
+                                  "protocolProperties": {"type": ptype}}}
+        if locator:
+            c["properties"] = [{"name": "greynoc:locator", "value": locator}]
+        if occ:
+            c["evidence"] = {"occurrences": [{"location": occ}]}
+        return c
+
+    doc = {"bomFormat": "CycloneDX", "specVersion": "1.6", "components": [
+        proto("crypto/protocol/a.example.com:443", locator="a.example.com:443"),
+        proto("crypto/protocol/b.example.com:8443"),            # bom-ref fallback
+        proto("urn:comp:3", occ="c.example.com:443"),           # occurrence fallback
+        proto("crypto/protocol/ssh", locator="s.example.com:22", ptype="ssh"),  # excluded
+        {"type": "cryptographic-asset", "bom-ref": "crypto/algo",
+         "cryptoProperties": {"assetType": "algorithm"}},        # excluded
+        proto("crypto/protocol/bad", locator="host:notaport"),  # malformed -> skipped
+    ]}
+    f = tmp_path / "in.cbom.json"
+    f.write_text(json.dumps(doc), encoding="utf-8")
+    hosts = {str(t) for t in cbom.extract_targets(str(f))}
+    assert "a.example.com:443" in hosts
+    assert "b.example.com:8443" in hosts
+    assert "c.example.com:443" in hosts
+    assert not any("s.example.com" in h for h in hosts)   # ssh excluded
+    assert not any("notaport" in h or h.startswith("host:") for h in hosts)
+
+
 def test_ingest_rejects_non_cyclonedx(tmp_path):
     bad = tmp_path / "bad.json"
     bad.write_text('{"hello": "world"}', encoding="utf-8")

@@ -6,8 +6,12 @@ needs to reproduce and trust the verdicts, per the GreyNOC standard:
 tool version + git commit, ruleset-pack hashes, FIPS-dataset snapshot date + hash,
 target(s), UTC run timestamp, an environment fingerprint, the authorization
 identifier, and the SHA-256 of every raw handshake transcript. It also binds to
-the findings via a reproducible ``results_sha256`` (computed with the timestamp
-excluded, so it is identical across runs over identical inputs).
+the findings via a ``results_sha256`` computed over the verdicts/classification
+with the run timestamp AND the per-connection transcript digests excluded — so it
+is identical across runs that observe identical server behaviour (live transcript
+bytes legitimately vary per connection and remain in the manifest for
+provenance). Note conformance verdicts are evaluated as-of the run date, so a
+verdict at a policy cutoff (e.g. the FIPS 140-2 Historical date) is date-sensitive.
 
 ``attest`` signs the canonical bytes of this manifest.
 """
@@ -64,8 +68,22 @@ def _canonical(obj) -> bytes:
 
 
 def results_digest(doc: dict) -> str:
-    """Reproducible digest of the findings — excludes the run timestamp."""
-    payload = {"summary": doc.get("summary"), "targets": doc.get("targets")}
+    """Reproducible digest of the findings.
+
+    Excludes the run timestamp and the per-connection transcript digests (which
+    vary every live run), so it is stable across runs that observe identical
+    server behaviour, while the digests themselves stay in the signed manifest.
+    """
+    import copy
+    targets = copy.deepcopy(doc.get("targets") or [])
+    for t in targets:
+        ch = t.get("completed_handshake")
+        if isinstance(ch, dict):
+            ch.pop("transcript_sha256", None)
+        for h in (t.get("handshakes") or []):
+            if isinstance(h, dict):
+                h.pop("transcript_sha256", None)
+    payload = {"summary": doc.get("summary"), "targets": targets}
     return hashlib.sha256(_canonical(payload)).hexdigest()
 
 

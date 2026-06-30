@@ -125,6 +125,24 @@ def test_fips_module_date_logic():
     assert fips_verdict("3.0", date(2026, 10, 1)) is ConformanceVerdict.UNKNOWN
 
 
+def test_version_below_tls13_fails_eo_rule():
+    # finding #11: a sub-TLS-1.3 endpoint FAILs the EO 14306 rule, kex -> N/A.
+    r = ProbeResult(host="h", port=443, reachable=True, is_tls13=False,
+                    negotiated_version="TLSv1.2", version_below_13=True)
+    v = _by_rule(conformance.evaluate(r, profile="both", run_date=date(2026, 6, 29)))
+    assert v["cnsa-tls13"] is ConformanceVerdict.FAIL
+    assert v["omb-tls13"] is ConformanceVerdict.FAIL
+    assert v["cnsa-kex-mlkem1024"] is ConformanceVerdict.NOT_APPLICABLE
+
+
+def test_unobserved_reachability_is_unknown_not_fabricated():
+    # reachable unobserved (None) -> the tls13 gate is UNKNOWN, never a FAIL.
+    r = ProbeResult(host="h", port=443, reachable=None)
+    v = _by_rule(conformance.evaluate(r, profile="both", run_date=date(2026, 6, 29)))
+    assert v["cnsa-tls13"] is ConformanceVerdict.UNKNOWN
+    assert v["omb-tls13"] is ConformanceVerdict.UNKNOWN
+
+
 def test_unreachable_kex_facts_are_unknown_not_fail():
     """An unreachable/unknown KEX is UNKNOWN (unobserved), not a fabricated FAIL."""
     r = ProbeResult(host="h", port=443, reachable=True, is_tls13=True,

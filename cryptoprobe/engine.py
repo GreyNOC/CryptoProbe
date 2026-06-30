@@ -62,10 +62,12 @@ def run_scan(args, auth, targets: list[Target]) -> int:
         if not allowed:
             log.warn(f"skipping {t}: {reason}")
             continue
-        limiter.wait()
         log.info(f"probing {t}")
+        # The limiter is threaded through validate() + downgrade.assess() so every
+        # handshake in the run is rate-spaced, not just the first per target.
         result = tlsverify.validate(t.host, t.port, timeout=args.timeout,
-                                    do_completed=not args.no_completed_handshake)
+                                    do_completed=not args.no_completed_handshake,
+                                    limiter=limiter)
         _enrich(args, result, limiter, run_dt)
         results.append(result)
         _log_one(result)
