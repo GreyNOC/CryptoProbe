@@ -170,9 +170,20 @@ def _cmd_scan(args) -> int:
         except (OSError, ValueError) as exc:
             log.warn(str(exc))
             return EXIT_ERROR
+    # Derive targets from an ingested CBOM's endpoints when none given explicitly.
+    if not tlist and args.cbom_in:
+        try:
+            from . import cbom
+            tlist = cbom.extract_targets(args.cbom_in)
+            if tlist:
+                log.info(f"derived {len(tlist)} target(s) from {args.cbom_in}")
+        except Exception as exc:  # noqa: BLE001
+            log.warn(f"could not read --cbom-in: {exc}")
+            return EXIT_ERROR
     tlist = targets_mod.sorted_unique(tlist)
-    if not tlist and not args.cbom_in:
-        log.warn("no targets given (pass HOST[:PORT], --target, or --targets FILE)")
+    if not tlist:
+        log.warn("no targets given (pass HOST[:PORT], --target, --targets FILE, "
+                 "or --cbom-in with endpoint components)")
         return EXIT_ERROR
 
     log.info(f"authorized: {auth.identifier} (source: {auth.source})")

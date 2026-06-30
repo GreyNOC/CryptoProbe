@@ -1,0 +1,851 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:54c30b85-0b23-4cca-88c7-cbeef5a83959",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-06-30T02:02:52.312868+00:00",
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "author": "GreyNOC",
+          "name": "GreyNOC CryptoScan",
+          "version": "0.2.2"
+        }
+      ]
+    },
+    "component": {
+      "type": "application",
+      "name": "pq.cloudflareresearch.com:443",
+      "bom-ref": "target"
+    },
+    "properties": [
+      {
+        "name": "greynoc:scanProfile",
+        "value": "pqc-posture-mvp"
+      },
+      {
+        "name": "greynoc:discipline",
+        "value": "authorized-testing-only;reproducible;no-fabrication"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/16223f3a2be6e688",
+      "name": "AES-256",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "block-cipher",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "encrypt",
+            "decrypt"
+          ],
+          "nistQuantumSecurityLevel": 5
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pq.cloudflareresearch.com:443"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "pq-safe"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "INFO"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "tls-endpoint"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "TLS_AES_256_GCM_SHA384"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "256"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "128"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/529838b1f6b491e3",
+      "name": "SHA-384",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "hash",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "digest"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pq.cloudflareresearch.com:443"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "pq-safe"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "INFO"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "tls-endpoint"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "TLS_AES_256_GCM_SHA384"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "384"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "192"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/026d67e65ed7ec85",
+      "name": "AES-128",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "block-cipher",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "encrypt",
+            "decrypt"
+          ],
+          "nistQuantumSecurityLevel": 1
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pq.cloudflareresearch.com:443"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "grover-weakened"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "MEDIUM"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "tls-endpoint"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "TLS_AES_128_GCM_SHA256"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "128"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "64"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "AES-256"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/698a526c961737ed",
+      "name": "SHA-256",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "hash",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "digest"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pq.cloudflareresearch.com:443"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "pq-safe"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "INFO"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "tls-endpoint"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "TLS_AES_128_GCM_SHA256"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "256"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "128"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/2516b2de62848ed8",
+      "name": "ChaCha20",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "stream-cipher",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "encrypt",
+            "decrypt"
+          ],
+          "nistQuantumSecurityLevel": 5
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pq.cloudflareresearch.com:443"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "pq-safe"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "INFO"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "tls-endpoint"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "TLS_CHACHA20_POLY1305_SHA256"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "256"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "128"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/960257006fd9b6c2",
+      "name": "ECDH",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "key-agree",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "keygen",
+            "keyderive"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pq.cloudflareresearch.com:443"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "true"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "tls-endpoint"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "ECDHE-ECDSA-CHACHA20-POLY1305"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "128"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-KEM-768 (FIPS 203)"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/30e0bffac856a134",
+      "name": "ECDSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "signature",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "sign",
+            "verify"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pq.cloudflareresearch.com:443"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "tls-endpoint"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "ECDHE-ECDSA-CHACHA20-POLY1305"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "128"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205)"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/899ff9c9523544cc",
+      "name": "SHA-1",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "hash",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "digest"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pq.cloudflareresearch.com:443"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "classically-weak"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "true"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "tls-endpoint"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "ECDHE-ECDSA-AES128-SHA"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "SHA-256; SHA-384"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/c73db9519a3c3126",
+      "name": "RSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "pke",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "encapsulate",
+            "decapsulate"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pq.cloudflareresearch.com:443"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "tls-endpoint"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "ECDHE-RSA-CHACHA20-POLY1305"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "112"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-KEM-768 (FIPS 203)"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/3e90039432dd359f",
+      "name": "ECDSA",
+      "cryptoProperties": {
+        "assetType": "certificate",
+        "certificateProperties": {
+          "certificateFormat": "X.509",
+          "subjectName": "CN=pq.cloudflareresearch.com",
+          "issuerName": "CN=WE1,O=Google Trust Services,C=US",
+          "notValidBefore": "2026-05-29T12:27:23+00:00",
+          "notValidAfter": "2026-08-27T13:24:53+00:00"
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pq.cloudflareresearch.com:443"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "certificate"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "ECDSA-256/secp256r1"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "128"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205)"
+        },
+        {
+          "name": "greynoc:assetRole",
+          "value": "certificate"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/175ff5ede9161ee3",
+      "name": "ECDSA",
+      "cryptoProperties": {
+        "assetType": "certificate",
+        "certificateProperties": {
+          "certificateFormat": "X.509",
+          "subjectName": "CN=pq.cloudflareresearch.com"
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pq.cloudflareresearch.com:443"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "certificate"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "ecdsa-with-SHA256"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "128"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205)"
+        },
+        {
+          "name": "greynoc:assetRole",
+          "value": "certificate"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/2c35562a84bc28ec",
+      "name": "X25519MLKEM768",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "key-agree",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "keygen",
+            "keyderive"
+          ],
+          "nistQuantumSecurityLevel": 3,
+          "parameterSetIdentifier": "X25519MLKEM768"
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pq.cloudflareresearch.com:443"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "pq-safe"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "INFO"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "tls-endpoint"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "X25519MLKEM768"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "128"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "128"
+        },
+        {
+          "name": "greynoc:standard",
+          "value": "FIPS 203 + draft-ietf-tls-ecdhe-mlkem"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/protocol/pq.cloudflareresearch.com:443",
+      "name": "TLS 1.3",
+      "cryptoProperties": {
+        "assetType": "protocol",
+        "protocolProperties": {
+          "type": "tls",
+          "version": "1.3",
+          "cipherSuites": [
+            {
+              "name": "AES128-GCM-SHA256"
+            },
+            {
+              "name": "AES128-SHA"
+            },
+            {
+              "name": "AES256-GCM-SHA384"
+            },
+            {
+              "name": "AES256-SHA"
+            },
+            {
+              "name": "ECDHE-ECDSA-AES128-GCM-SHA256"
+            },
+            {
+              "name": "ECDHE-ECDSA-AES128-SHA"
+            },
+            {
+              "name": "ECDHE-ECDSA-AES128-SHA256"
+            },
+            {
+              "name": "ECDHE-ECDSA-AES256-GCM-SHA384"
+            },
+            {
+              "name": "ECDHE-ECDSA-AES256-SHA"
+            },
+            {
+              "name": "ECDHE-ECDSA-AES256-SHA384"
+            },
+            {
+              "name": "ECDHE-ECDSA-CHACHA20-POLY1305"
+            },
+            {
+              "name": "ECDHE-RSA-AES128-GCM-SHA256"
+            },
+            {
+              "name": "ECDHE-RSA-AES128-SHA"
+            },
+            {
+              "name": "ECDHE-RSA-AES256-GCM-SHA384"
+            },
+            {
+              "name": "ECDHE-RSA-AES256-SHA"
+            },
+            {
+              "name": "ECDHE-RSA-CHACHA20-POLY1305"
+            },
+            {
+              "name": "TLS_AES_128_GCM_SHA256"
+            },
+            {
+              "name": "TLS_AES_256_GCM_SHA384"
+            },
+            {
+              "name": "TLS_CHACHA20_POLY1305_SHA256"
+            }
+          ]
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pq.cloudflareresearch.com:443"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:assetType",
+          "value": "tls-endpoint"
+        },
+        {
+          "name": "greynoc:locator",
+          "value": "pq.cloudflareresearch.com:443"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1686 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:a3562f65-5a4b-46a4-bf2e-78cb3423a489",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-06-30T02:01:36.171095+00:00",
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "author": "GreyNOC",
+          "name": "GreyNOC CryptoScan",
+          "version": "0.2.2"
+        }
+      ]
+    },
+    "component": {
+      "type": "application",
+      "name": "sample-target",
+      "bom-ref": "target"
+    },
+    "properties": [
+      {
+        "name": "greynoc:scanProfile",
+        "value": "pqc-posture-mvp"
+      },
+      {
+        "name": "greynoc:discipline",
+        "value": "authorized-testing-only;reproducible;no-fabrication"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/08d03a5a912034b4",
+      "name": "RSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "pke",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "encapsulate",
+            "decapsulate"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "src/auth.py:6"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "true"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "source"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "rsa_key = RSA.generate(2048)            # quantum-vulnerable (Shor)"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "112"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-KEM-768 (FIPS 203)"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/13a74fcd7847e79d",
+      "name": "ECDSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "signature",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "sign",
+            "verify"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "src/auth.py:7"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "source"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "ec_key = ec.generate_private_key(ec.SECP256R1())  # ECDSA, Shor"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "128"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205)"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/4436f01fe816ecd9",
+      "name": "MD5",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "hash",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "digest"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "src/auth.py:11"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "classically-weak"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "true"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "source"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "return hashlib.md5(data).hexdigest()    # classically broken"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "SHA-256; SHA-384"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/fb9cac2c0c8c430b",
+      "name": "AES-128",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "block-cipher",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "encrypt",
+            "decrypt"
+          ],
+          "nistQuantumSecurityLevel": 1
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "src/crypto_box.js:2"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "grover-weakened"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "MEDIUM"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "source"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "const cipher = crypto.createCipheriv('aes-128-cbc', key, iv);  // AES-128"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "128"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "64"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "AES-256"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/32dd772ec0e22881",
+      "name": "3DES",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "block-cipher",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "encrypt",
+            "decrypt"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "src/crypto_box.js:3"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "classically-weak"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "true"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "source"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "const weak = crypto.createCipheriv('des-ede3', k, iv);         // 3DES"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "112"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "56"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "AES-256"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/6b3c9dc397f1a014",
+      "name": "SHA-1",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "hash",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "digest"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "src/crypto_box.js:4"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "classically-weak"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "true"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "source"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "const h = crypto.createHash('sha1');                            // SHA-1"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "SHA-256; SHA-384"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/b966d8e661c92686",
+      "name": "ML-KEM",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "pke",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "encapsulate",
+            "decapsulate"
+          ],
+          "nistQuantumSecurityLevel": 3
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "src/pq_ready.py:2"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "pq-safe"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "INFO"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "source"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "from kyber_py.ml_kem import ML_KEM_768   # ML-KEM, PQ-safe"
+        },
+        {
+          "name": "greynoc:standard",
+          "value": "FIPS 203"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/5d79740b2b0e2f57",
+      "name": "RSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "pke",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "encapsulate",
+            "decapsulate"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "src/Signer.java:5"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "true"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "source"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "KeyPairGenerator kpg = KeyPairGenerator.getInstance(\"RSA\");  // RSA"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "112"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-KEM-768 (FIPS 203)"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/55aa9a2179d1c4c2",
+      "name": "ECDSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "signature",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "sign",
+            "verify"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "src/Signer.java:11"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "source"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "Signature s = Signature.getInstance(\"SHA256withECDSA\");      // ECDSA"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "128"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205)"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/bd0bd3c7ee03765d",
+      "name": "MD5",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "hash",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "digest"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "src/Signer.java:18"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "classically-weak"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "true"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "source"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "return MessageDigest.getInstance(\"MD5\").digest(data);        // MD5"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "SHA-256; SHA-384"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/7b67b49e083b6395",
+      "name": "RSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "pke",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "encapsulate",
+            "decapsulate"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "src/tokens.js:4"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "true"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "source"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "const access = jwt.sign(payload, rsaPrivateKey, { algorithm: 'RS256' });  // RSA"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "112"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-KEM-768 (FIPS 203)"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/555ffe7cfc2c6d2d",
+      "name": "HMAC",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "mac",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "tag",
+            "verify"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "src/tokens.js:5"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "pq-safe"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "INFO"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "source"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "const session = jwt.sign(payload, hmacSecret, { algorithm: 'HS256' });    // HMAC"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "256"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "128"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/999143beb4630ea6",
+      "name": "ECDSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "signature",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "sign",
+            "verify"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "src/tokens.js:6"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "source"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "const device = jwt.sign(payload, ecPrivateKey, { algorithm: 'ES256' });   // ECDSA"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "128"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205)"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/54a17dbe62e31da1",
+      "name": "RSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "pke",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "encapsulate",
+            "decapsulate"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "composer.json -> phpseclib/phpseclib"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "true"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "dependency"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "phpseclib/phpseclib"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "112"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-KEM-768 (FIPS 203)"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/8bc24d03af98e4b4",
+      "name": "EdDSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "signature",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "sign",
+            "verify"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "Gemfile -> rbnacl"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "dependency"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "rbnacl"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "128"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205)"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/3510f947b373c75b",
+      "name": "ECDSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "signature",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "sign",
+            "verify"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "go.sum -> btcec"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "dependency"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "btcec"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "128"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205)"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/03cb6317059a5ad7",
+      "name": "RSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "pke",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "encapsulate",
+            "decapsulate"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "package.json -> node-rsa"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "true"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "dependency"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "node-rsa"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "112"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-KEM-768 (FIPS 203)"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/126a8f2957fa2e6d",
+      "name": "ECDSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "signature",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "sign",
+            "verify"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "package.json -> elliptic"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "dependency"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "elliptic"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "128"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205)"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/67f9d58e4aff66e8",
+      "name": "RSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "pke",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "encapsulate",
+            "decapsulate"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pom.xml -> bcprov-jdk18on"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "true"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "dependency"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "bcprov-jdk18on"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "112"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-KEM-768 (FIPS 203)"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/c65743f9d9475695",
+      "name": "RSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "pke",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "encapsulate",
+            "decapsulate"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pom.xml -> conscrypt-openjdk-uber"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "true"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "dependency"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "conscrypt-openjdk-uber"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "112"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-KEM-768 (FIPS 203)"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/25487391ce57c9ca",
+      "name": "RSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "pke",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "encapsulate",
+            "decapsulate"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "requirements.txt -> pycryptodome"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "true"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "dependency"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "pycryptodome"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "112"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-KEM-768 (FIPS 203)"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/9dfa8b5880dba89a",
+      "name": "ECDSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "signature",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "sign",
+            "verify"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "requirements.txt -> ecdsa"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "dependency"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "ecdsa"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "128"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205)"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/76ee7abc157b3f23",
+      "name": "EdDSA",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "signature",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "sign",
+            "verify"
+          ],
+          "nistQuantumSecurityLevel": 0
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "requirements.txt -> pynacl"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "dependency"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "pynacl"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "128"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205)"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/92f88c886af78a18",
+      "name": "ML-KEM",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "primitive": "pke",
+          "executionEnvironment": "software-plain-ram",
+          "cryptoFunctions": [
+            "encapsulate",
+            "decapsulate"
+          ],
+          "nistQuantumSecurityLevel": 3
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "requirements.txt -> kyber-py"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "pq-safe"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "INFO"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "dependency"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "kyber-py"
+        },
+        {
+          "name": "greynoc:standard",
+          "value": "FIPS 203"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/3fed395bc36d60eb",
+      "name": "RSA",
+      "cryptoProperties": {
+        "assetType": "certificate",
+        "certificateProperties": {
+          "certificateFormat": "X.509",
+          "subjectName": "CN=legacy.example.com",
+          "issuerName": "CN=legacy.example.com",
+          "notValidBefore": "2024-01-01T00:00:00+00:00",
+          "notValidAfter": "2026-01-01T00:00:00+00:00"
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pki/legacy.crt"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "true"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "certificate"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "RSA-1024"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "80"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-KEM-768 (FIPS 203)"
+        },
+        {
+          "name": "greynoc:assetRole",
+          "value": "certificate"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/3cd3695b19fd1783",
+      "name": "RSA",
+      "cryptoProperties": {
+        "assetType": "certificate",
+        "certificateProperties": {
+          "certificateFormat": "X.509",
+          "subjectName": "CN=legacy.example.com"
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pki/legacy.crt"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "certificate"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "sha256WithRSAEncryption"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "112"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-KEM-768 (FIPS 203)"
+        },
+        {
+          "name": "greynoc:assetRole",
+          "value": "certificate"
+        }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "bom-ref": "crypto/2352644dbbedcb69",
+      "name": "ECDSA",
+      "cryptoProperties": {
+        "assetType": "certificate",
+        "certificateProperties": {
+          "certificateFormat": "X.509"
+        }
+      },
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "pki/service.key"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "greynoc:quantumRisk",
+          "value": "shor-broken"
+        },
+        {
+          "name": "greynoc:severity",
+          "value": "HIGH"
+        },
+        {
+          "name": "greynoc:hndlExposed",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:classicallyWeak",
+          "value": "false"
+        },
+        {
+          "name": "greynoc:assetType",
+          "value": "certificate"
+        },
+        {
+          "name": "greynoc:evidence",
+          "value": "key:ECDSA-secp256r1"
+        },
+        {
+          "name": "greynoc:classicalBits",
+          "value": "128"
+        },
+        {
+          "name": "greynoc:quantumBits",
+          "value": "0"
+        },
+        {
+          "name": "greynoc:migrateTo",
+          "value": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205)"
+        },
+        {
+          "name": "greynoc:assetRole",
+          "value": "certificate"
+        }
+      ]
+    }
+  ]
+}
