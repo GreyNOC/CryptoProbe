@@ -113,6 +113,8 @@ cryptoprobe scan --targets targets.txt --scope scope.yaml \
 
 # Sign the run with ML-DSA-87 (operator-supplied key)
 cryptoprobe attest --run run.json --sign-key ml-dsa.key --out attestation.json
+# Verify: pass the operator's trusted --pub-key to AUTHENTICATE the signer (exit 0).
+# Without --pub-key the check is self-consistency only (embedded key) and exits 2.
 cryptoprobe attest --verify attestation.json --pub-key ml-dsa.pub
 
 # Inspect / validate the conformance packs
