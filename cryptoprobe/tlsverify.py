@@ -98,11 +98,9 @@ def validate(host: str, port: int = 443, *, timeout: float = 8.0,
             group.supports_hybrid_pqc = True
             if hg.name not in group.accepted_groups:
                 group.accepted_groups.append(hg.name)
-        elif hy.error is None and hy.alert is None and hg is None:
-            group.supports_hybrid_pqc = group.supports_hybrid_pqc or False
         else:
-            # refused/alerted when offered only hybrids -> no PQC support observed
-            group.supports_hybrid_pqc = group.supports_hybrid_pqc or False
+            # refused / no hybrid selected -> no PQC support observed here.
+            group.supports_hybrid_pqc = bool(group.supports_hybrid_pqc)
     result.group = group
 
     # 3. certificate inspection -----------------------------------------------
@@ -112,8 +110,11 @@ def validate(host: str, port: int = 443, *, timeout: float = 8.0,
     if do_completed:
         cap = handshake.capability()
         if cap.available:
-            rec = handshake.complete_handshake(host, port, offered_groups=None,
-                                               timeout=max(timeout, 10.0))
+            # Offer CryptoProbe's documented hybrid-first order so the negotiated
+            # group (and thus prefers_pqc) reflects DEFAULT_OFFER, not openssl's.
+            rec = handshake.complete_handshake(
+                host, port, offered_groups=list(rawprobe.DEFAULT_OFFER),
+                timeout=max(timeout, 10.0))
             result.completed_handshake = rec
             result.handshakes.append(rec)
             # The completed handshake is authoritative for the negotiated group.
@@ -140,8 +141,11 @@ def _fetch_cert(host: str, port: int, timeout: float) -> CertInfo | None:
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE
+        # No SNI for an IP literal (an IP server_name can change server selection
+        # and is invalid SNI).
+        sni = None if rawprobe._is_ip_literal(host) else host
         with socket.create_connection((host, port), timeout=timeout) as sock:
-            with ctx.wrap_socket(sock, server_hostname=host) as ss:
+            with ctx.wrap_socket(sock, server_hostname=sni) as ss:
                 der = ss.getpeercert(binary_form=True)
     except (OSError, ssl.SSLError) as exc:
         log.debug(f"cert fetch failed for {host}:{port}: {exc}")

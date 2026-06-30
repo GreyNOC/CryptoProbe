@@ -98,18 +98,53 @@ def _extension(ext_type: int, data: bytes) -> bytes:
     return struct.pack(">H", ext_type) + _vec(data, 2)
 
 
+def _is_ip_literal(name: str) -> bool:
+    import ipaddress
+    try:
+        ipaddress.ip_address(name)
+        return True
+    except ValueError:
+        return False
+
+
+def default_key_shares(groups: tuple[NamedGroup, ...]) -> tuple[NamedGroup, ...]:
+    """Pick the key_share group(s) for an offered group set.
+
+    Only x25519's real share is exactly our 32-byte dummy length, so it is the
+    one group we can offer a syntactically valid dummy share for. If x25519 is
+    offered, send its share; otherwise send NO key_share (an empty, RFC 8446
+    §4.2.8-conformant ClientHello) and let the server HelloRetryRequest with its
+    preferred group. This avoids sending a key_share for a group that is not in
+    supported_groups (which a strict server rejects) or a wrong-length dummy for
+    a hybrid group (which an ML-KEM input check rejects).
+    """
+    return (NamedGroup.x25519,) if NamedGroup.x25519 in groups else ()
+
+
 def build_client_hello(server_name: str,
                        groups: tuple[NamedGroup, ...] = DEFAULT_OFFER, *,
-                       key_share_groups: tuple[NamedGroup, ...] = (NamedGroup.x25519,),
+                       key_share_groups: "tuple[NamedGroup, ...] | None" = None,
                        cipher_suites: tuple[int, ...] = _DEFAULT_SUITES) -> bytes:
     """Build a complete TLS record carrying a TLS 1.3 ClientHello.
 
     Deterministic client_random (no RNG) so the transcript hashes reproducibly.
+    When ``key_share_groups`` is None the shares are derived from ``groups`` so
+    every KeyShareEntry corresponds to an offered group (RFC 8446 §4.2.8).
     """
+    if key_share_groups is None:
+        key_share_groups = default_key_shares(groups)
     client_random = hashlib.sha256(b"greynoc-cryptoprobe-probe").digest()
-    name_bytes = server_name.encode("ascii", "ignore")[:253]
-    sni_entry = b"\x00" + _vec(name_bytes, 2)
-    sni_ext = _extension(_EXT_SERVER_NAME, _vec(sni_entry, 2))
+    # SNI: omit for IP literals (an IP server_name can change server selection);
+    # IDNA-encode hostnames so a non-ASCII name is punycoded, not truncated.
+    sni_ext = b""
+    if not _is_ip_literal(server_name):
+        try:
+            name_bytes = server_name.encode("idna")[:253]
+        except (UnicodeError, ValueError):
+            name_bytes = server_name.encode("ascii", "ignore")[:253]
+        if name_bytes:
+            sni_entry = b"\x00" + _vec(name_bytes, 2)
+            sni_ext = _extension(_EXT_SERVER_NAME, _vec(sni_entry, 2))
     sv_ext = _extension(_EXT_SUPPORTED_VERSIONS,
                         _vec(struct.pack(">H", _TLS13_VERSION), 1))
     groups_bytes = b"".join(struct.pack(">H", int(g)) for g in groups)
@@ -266,7 +301,7 @@ def _read_handshake(host: str, port: int, client_hello: bytes,
 
 
 def probe_offer(host: str, port: int, groups: tuple[NamedGroup, ...], *,
-                key_share_groups: tuple[NamedGroup, ...] = (NamedGroup.x25519,),
+                key_share_groups: "tuple[NamedGroup, ...] | None" = None,
                 cipher_suites: tuple[int, ...] = _DEFAULT_SUITES,
                 timeout: float = 8.0) -> RawOutcome:
     """Offer a specific group set and record the outcome. Never raises."""
@@ -289,7 +324,7 @@ def enumerate_tls13_ciphers(host: str, port: int, timeout: float = 4.0) -> list[
         res = probe_offer(host, port, DEFAULT_OFFER,
                           cipher_suites=(int(cs),), timeout=each)
         if res.error is not None:
-            break
+            continue  # transient error on one suite must not abort the sweep
         if res.cipher_suite == int(cs):
             accepted.append(cs.name)
     return accepted

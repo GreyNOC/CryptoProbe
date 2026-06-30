@@ -120,30 +120,40 @@ def assess(result, *, timeout: float = 8.0, limiter=None) -> None:
         result.handshakes.append(oss_cl)
         oss_cl_completed = bool(oss_cl.completed)
     classical_accepted = bool(classical_ok) or bool(oss_cl_completed)
+    # An OBSERVED refusal: a TLS alert, or a clean ServerHello that did not select
+    # a classical group. A bare transport error (timeout/reset) is NOT a refusal.
+    classical_refused = (not classical_accepted
+                         and (bool(raw_cl.alert)
+                              or (raw_cl.is_server_hello and not classical_ok)))
     probes.append(DowngradeProbe(
         name="classical-only",
         offered_groups=[g.name for g in rawprobe.CLASSICAL_GROUPS],
         outcome=("completed" if classical_accepted else
-                 ("refused" if (raw_cl.alert or raw_cl.error) else "unknown")),
+                 "refused" if classical_refused else "unknown"),
         negotiated_group=(raw_cl.selected_group_name if classical_ok else
                           (oss_cl.negotiated_group if oss_cl_completed else None)),
         detail=("server WILL complete a classical-only handshake — strippable"
                 if classical_accepted else
-                "server refuses a classical-only handshake")))
+                "server refuses a classical-only handshake" if classical_refused
+                else "classical-only leg did not complete (transport error) — "
+                     "strippability undetermined")))
 
     verdict, strippable, reason = _derive(supports_pqc, prefers_pqc,
-                                          classical_accepted, raw_pqc, raw_cl)
+                                          classical_accepted, classical_refused,
+                                          raw_pqc, raw_cl)
     result.downgrade = DowngradeResult(verdict=verdict, strippable=strippable,
                                        probes=probes, reason=reason)
-    result.hybrid = _hybrid_check(result)
+    result.hybrid = _hybrid_check(result, observed_share_len=raw_pqc.server_share_len)
     log.debug(f"  {result.target}: downgrade={verdict.value} strippable={strippable} "
               f"hybrid={result.hybrid.verdict.value}")
 
 
-def _derive(supports_pqc, prefers_pqc, classical_accepted, raw_pqc, raw_cl):
-    # Could not get a clean read on either PQC support or classical acceptance.
+def _derive(supports_pqc, prefers_pqc, classical_accepted, classical_refused,
+            raw_pqc, raw_cl):
+    # Could not get a clean read on either PQC support or classical behaviour.
     inconclusive = ((raw_pqc.error and not supports_pqc)
-                    and (raw_cl.error and not classical_accepted))
+                    and (raw_cl.error and not classical_accepted
+                         and not classical_refused))
     if inconclusive:
         return (DowngradeVerdict.UNKNOWN, None,
                 "handshake probes were inconclusive (transport errors)")
@@ -164,12 +174,18 @@ def _derive(supports_pqc, prefers_pqc, classical_accepted, raw_pqc, raw_cl):
                 "server prefers PQC with normal clients but will still complete "
                 "a classical-only handshake — an on-path attacker can strip the "
                 "PQC groups and force classical key establishment")
-    return (DowngradeVerdict.RESISTANT, False,
-            "server prefers PQC and refuses a classical-only handshake — "
-            "stripping the PQC groups yields a handshake failure, not a fallback")
+    if classical_refused:
+        return (DowngradeVerdict.RESISTANT, False,
+                "server prefers PQC and refuses a classical-only handshake — "
+                "stripping the PQC groups yields a handshake failure, not a fallback")
+    # PQC preferred, but the classical-only leg neither completed nor was cleanly
+    # refused (transport error) — do NOT fabricate RESISTANT.
+    return (DowngradeVerdict.UNKNOWN, None,
+            "PQC preferred, but the classical-only leg did not complete cleanly "
+            "(transport error) — strippability undetermined")
 
 
-def _hybrid_check(result) -> HybridCheck:
+def _hybrid_check(result, observed_share_len=None) -> HybridCheck:
     neg = result.group.negotiated_group
     ng = _named(neg)
     if ng is None:
@@ -179,14 +195,24 @@ def _hybrid_check(result) -> HybridCheck:
         return HybridCheck(verdict=HybridVerdict.NOT_HYBRID, group=ng.name,
                            reason="negotiated group is not an ML-KEM hybrid")
     expected = ng.expected_server_share_len
+    # If we actually observed the server's hybrid key_share length and it does not
+    # match the expected (ECDHE + ML-KEM ciphertext) size, the share is malformed.
+    if observed_share_len is not None and expected is not None \
+            and observed_share_len != expected:
+        return HybridCheck(
+            verdict=HybridVerdict.INCORRECT, group=ng.name,
+            server_share_len=observed_share_len, expected_share_len=expected,
+            reason=f"server key_share is {observed_share_len} bytes but a valid "
+                   f"{ng.name} share is {expected} bytes (ECDHE + ML-KEM ciphertext)")
     ch = result.completed_handshake
     if ch and ch.completed and _is_hybrid_name(ch.negotiated_group or ""):
         return HybridCheck(
             verdict=HybridVerdict.CORRECT, group=ng.name,
             classical_present=True, mlkem_present=True,
-            expected_share_len=expected,
+            server_share_len=observed_share_len, expected_share_len=expected,
             reason="completed a real hybrid key exchange (openssl): both the "
-                   "ECDHE and ML-KEM halves were present and well-formed")
+                   "ECDHE and ML-KEM halves were used; the server key_share "
+                   "length was not separately measured")
     # We saw the hybrid selected (e.g. via HelloRetryRequest) but did not
     # complete the exchange, so we cannot inspect the share. Honest UNKNOWN.
     return HybridCheck(

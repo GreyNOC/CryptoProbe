@@ -118,7 +118,10 @@ def complete_handshake(host: str, port: int,
         rec.completed = None
         return rec
 
-    args = [cap.path, "s_client", "-connect", f"{host}:{port}",
+    # Bracket an IPv6 literal for -connect; SNI (-servername) must stay bare and
+    # openssl omits SNI for IP literals anyway.
+    connect_host = f"[{host}]" if (":" in host and not host.startswith("[")) else host
+    args = [cap.path, "s_client", "-connect", f"{connect_host}:{port}",
             "-servername", host, "-tls1_3"]
     if offered_groups:
         args += ["-groups", ":".join(_openssl_group_token(g.name) for g in offered_groups)]
@@ -136,38 +139,67 @@ def complete_handshake(host: str, port: int,
     out = proc.stdout
     rec.transcript = out
     rec.finalize()
-    text = out.decode("utf-8", "replace")
+    parsed = _parse_openssl_output(out.decode("utf-8", "replace"))
+    rec.negotiated_group = parsed["negotiated_group"]
+    rec.negotiated_group_code = parsed["negotiated_group_code"]
+    rec.negotiated_version = parsed["negotiated_version"]
+    rec.negotiated_cipher = parsed["negotiated_cipher"]
+    rec.completed = parsed["completed"]
+    rec.error = parsed["error"]
+    rec.summary = parsed["summary"]
+    return rec
 
+
+def _parse_openssl_output(text: str) -> dict:
+    """Parse `openssl s_client` output into handshake facts (pure; testable).
+
+    A handshake is COMPLETE only on direct evidence openssl finished — a
+    negotiated-group line, a verify-return-code line, or a cipher line together
+    with a peer certificate — AND with no fatal alert present. A bare certificate
+    block is not sufficient (a server can present a cert then abort).
+    """
     mg = _NEG_GROUP_RE.search(text)
+    negotiated_group = negotiated_group_code = None
     if mg:
-        gname = mg.group(1)
-        rec.negotiated_group = gname
-        ng = _group_from_name(gname)
-        rec.negotiated_group_code = int(ng) if ng is not None else None
+        negotiated_group = mg.group(1)
+        ng = _group_from_name(negotiated_group)
+        negotiated_group_code = int(ng) if ng is not None else None
     mp = _PROTO_RE.search(text)
-    if mp:
-        rec.negotiated_version = mp.group(1)
+    negotiated_version = mp.group(1) if mp else None
     mc = _NEW_CIPHER_RE.search(text)
+    negotiated_cipher = None
     if mc:
-        rec.negotiated_version = rec.negotiated_version or mc.group(1)
-        rec.negotiated_cipher = mc.group(2)
+        negotiated_version = negotiated_version or mc.group(1)
+        negotiated_cipher = mc.group(2)
     mv = _VERIFY_RE.search(text)
 
-    # A completed handshake shows a negotiated group or a peer certificate.
-    completed = bool(mg) or ("BEGIN CERTIFICATE" in text) or (mc is not None)
-    rec.completed = completed
-    if not completed:
-        # Surface the salient failure line (alert / handshake failure / no group).
-        rec.error = _failure_reason(text)
+    # Match openssl's own alert/failure phrasing (e.g. "tlsv1 alert handshake
+    # failure", "sslv3 alert ...", "no shared cipher") rather than a bare "alert"
+    # substring, which could appear inside a certificate subject.
+    has_fatal_alert = re.search(
+        r"(ssl|tls)\w* alert|handshake failure|no shared cipher|no peer certificate",
+        text, re.IGNORECASE) is not None
+    finished = bool(mg) or (mv is not None) or (mc is not None and "BEGIN CERTIFICATE" in text)
+    completed = finished and not has_fatal_alert
+
+    error = None if completed else _failure_reason(text)
     parts = []
-    if rec.negotiated_group:
-        parts.append(f"group {rec.negotiated_group}")
-    if rec.negotiated_cipher:
-        parts.append(f"cipher {rec.negotiated_cipher}")
+    if negotiated_group:
+        parts.append(f"group {negotiated_group}")
+    if negotiated_cipher:
+        parts.append(f"cipher {negotiated_cipher}")
     if mv:
         parts.append(f"verify {mv.group(1)}")
-    rec.summary = "; ".join(parts) if parts else (rec.error or "no handshake")
-    return rec
+    summary = "; ".join(parts) if parts else (error or "no handshake")
+    return {
+        "negotiated_group": negotiated_group,
+        "negotiated_group_code": negotiated_group_code,
+        "negotiated_version": negotiated_version,
+        "negotiated_cipher": negotiated_cipher,
+        "completed": completed,
+        "error": error,
+        "summary": summary,
+    }
 
 
 def _group_from_name(name: str) -> NamedGroup | None:

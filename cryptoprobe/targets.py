@@ -24,6 +24,17 @@ class Target:
         return f"{self.host}:{self.port}"
 
 
+def _check_host(host: str, spec: str) -> str:
+    """Fail closed on hosts that would be footguns in downstream argv (openssl).
+
+    Rejects empty, leading-'-', and whitespace/control-char hosts. IPv6 colons
+    and IDNA/Unicode hostnames are preserved.
+    """
+    if not host or host.startswith("-") or any(c.isspace() or ord(c) < 0x20 for c in host):
+        raise ValueError(f"bad target '{spec}': invalid host")
+    return host
+
+
 def parse_target(spec: str, default_port: int = 443) -> Target:
     """Parse ``host``, ``host:port``, ``[ipv6]:port`` into a Target."""
     t = spec.strip()
@@ -34,13 +45,18 @@ def parse_target(spec: str, default_port: int = 443) -> Target:
         port = rest.lstrip(":")
         if port and not port.isdigit():
             raise ValueError(f"bad target '{spec}': port must be numeric")
-        return Target(host, int(port) if port else default_port)
+        return Target(_check_host(host, spec), int(port) if port else default_port)
     if ":" in t:
+        # A host:port has exactly one colon; more than one is a bare (unbracketed)
+        # IPv6 literal, which rpartition would silently corrupt.
+        if t.count(":") > 1:
+            raise ValueError(
+                f"bad target '{spec}': bracket IPv6 addresses, e.g. [{t}]:{default_port}")
         host, _, port = t.rpartition(":")
         if not port.isdigit():
             raise ValueError(f"bad target '{spec}': port must be numeric")
-        return Target(host, int(port))
-    return Target(t, default_port)
+        return Target(_check_host(host, spec), int(port))
+    return Target(_check_host(t, spec), default_port)
 
 
 def load_targets_file(path: str, default_port: int = 443) -> list[Target]:

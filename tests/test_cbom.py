@@ -67,7 +67,8 @@ def test_serial_is_deterministic():
     assert a["serialNumber"] == b["serialNumber"]
     # only the metadata timestamp may differ across runs
     import json
-    a2 = json.loads(json.dumps(a)); b2 = json.loads(json.dumps(b))
+    a2 = json.loads(json.dumps(a))
+    b2 = json.loads(json.dumps(b))
     a2["metadata"]["timestamp"] = b2["metadata"]["timestamp"] = "X"
     assert json.dumps(a2, sort_keys=True) == json.dumps(b2, sort_keys=True)
 

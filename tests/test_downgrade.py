@@ -20,7 +20,7 @@ def _clean():
 def test_classical_only_is_critical():
     v, strippable, _ = downgrade._derive(
         supports_pqc=False, prefers_pqc=False, classical_accepted=True,
-        raw_pqc=_clean(), raw_cl=_clean())
+        classical_refused=False, raw_pqc=_clean(), raw_cl=_clean())
     assert v is DowngradeVerdict.CLASSICAL_ONLY
     assert strippable is True
     assert v.severity.value == "CRITICAL"
@@ -29,7 +29,7 @@ def test_classical_only_is_critical():
 def test_supports_but_not_prefers_is_vulnerable():
     v, strippable, _ = downgrade._derive(
         supports_pqc=True, prefers_pqc=False, classical_accepted=True,
-        raw_pqc=_clean(), raw_cl=_clean())
+        classical_refused=False, raw_pqc=_clean(), raw_cl=_clean())
     assert v is DowngradeVerdict.VULNERABLE
     assert strippable is True
     assert v.severity.value == "HIGH"
@@ -38,26 +38,38 @@ def test_supports_but_not_prefers_is_vulnerable():
 def test_prefers_pqc_but_classical_accepted_is_strippable():
     v, strippable, _ = downgrade._derive(
         supports_pqc=True, prefers_pqc=True, classical_accepted=True,
-        raw_pqc=_clean(), raw_cl=_clean())
+        classical_refused=False, raw_pqc=_clean(), raw_cl=_clean())
     assert v is DowngradeVerdict.PREFERS_PQC
     assert strippable is True
     assert v.severity.value == "MEDIUM"
 
 
 def test_refuses_classical_is_resistant():
+    # RESISTANT requires an OBSERVED classical refusal, not just "not accepted".
     v, strippable, _ = downgrade._derive(
         supports_pqc=True, prefers_pqc=True, classical_accepted=False,
-        raw_pqc=_clean(), raw_cl=_clean())
+        classical_refused=True, raw_pqc=_clean(), raw_cl=_clean())
     assert v is DowngradeVerdict.RESISTANT
     assert strippable is False
     assert v.severity.value == "INFO"
+
+
+def test_classical_leg_transport_error_does_not_fabricate_resistant():
+    # PQC preferred, classical leg neither completed nor cleanly refused (error)
+    # -> UNKNOWN, never a fabricated RESISTANT (finding #1).
+    bad = RawOutcome(offered_groups=(), error="timeout")
+    v, strippable, _ = downgrade._derive(
+        supports_pqc=True, prefers_pqc=True, classical_accepted=False,
+        classical_refused=False, raw_pqc=_clean(), raw_cl=bad)
+    assert v is DowngradeVerdict.UNKNOWN
+    assert strippable is None
 
 
 def test_transport_errors_are_unknown_not_guessed():
     bad = RawOutcome(offered_groups=(), error="ConnectionRefusedError")
     v, strippable, _ = downgrade._derive(
         supports_pqc=False, prefers_pqc=False, classical_accepted=False,
-        raw_pqc=bad, raw_cl=bad)
+        classical_refused=False, raw_pqc=bad, raw_cl=bad)
     assert v is DowngradeVerdict.UNKNOWN
     assert strippable is None
 

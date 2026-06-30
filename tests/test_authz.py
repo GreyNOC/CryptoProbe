@@ -78,6 +78,26 @@ def test_parse_target_forms():
         pass
 
 
+def test_parse_target_rejects_bare_ipv6():
+    # bare (unbracketed) IPv6 would be silently corrupted by rpartition (#9)
+    for bad in ("2001:db8::1", "fe80::1", "::1"):
+        try:
+            parse_target(bad)
+            assert False, f"expected ValueError for {bad}"
+        except ValueError as exc:
+            assert "bracket" in str(exc)
+
+
+def test_parse_target_rejects_footgun_hosts():
+    # leading-dash / whitespace / control hosts flow into openssl argv (#27)
+    for bad in ("-oProxyCommand", "-x", "bad host", "fo\to"):
+        try:
+            parse_target(bad)
+            assert False, f"expected ValueError for {bad!r}"
+        except ValueError:
+            pass
+
+
 def test_targets_file_sorted_unique(tmp_path):
     f = tmp_path / "targets.txt"
     f.write_text(
