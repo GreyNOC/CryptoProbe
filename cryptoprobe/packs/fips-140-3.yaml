@@ -1,0 +1,30 @@
+id: fips-140-3
+title: "FIPS 140-3 — CMVP module validation status"
+mandate: "FIPS 140-3 / NIST CMVP"
+profile: general
+status: active
+summary: >
+  FIPS 140-3 is the current cryptographic-module standard (effective 2019-09-22;
+  superseded FIPS 140-2). On 2026-09-21 all remaining FIPS 140-2 validated
+  modules move to the CMVP Historical list; Historical-list modules should not be
+  included in NEW federal procurements (the certificate is not revoked — agencies
+  may keep using them for legacy systems and may make a risk determination).
+default_citation: "https://csrc.nist.gov/projects/fips-140-3-transition-effort"
+deadlines:
+  fips_140_2_historical: "2026-09-21"
+rules:
+  - id: fips-140-3-module
+    requirement: "The validated cryptographic module must be FIPS 140-3 (not FIPS 140-2-only)"
+    mandate: "FIPS 140-3 / CMVP"
+    deadline: "2026-09-21"
+    citation: "https://csrc.nist.gov/projects/cryptographic-module-validation-program/validated-modules"
+    severity: HIGH
+    check: fips_module
+    observed: fips_module
+    fail_detail: >
+      A FIPS 140-2-only module moves to the CMVP Historical list on 2026-09-21
+      and should not be included in new federal procurements after that date.
+    unknown_detail: >
+      The validated module backing a TLS endpoint is not observable over the
+      handshake. Supply --fips-module NAME, or a CryptoScan CBOM that names the
+      module/library, to cross-reference the bundled CMVP dataset.

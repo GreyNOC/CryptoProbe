@@ -1,0 +1,49 @@
+{
+  "dataset": "GreyNOC CMVP cross-reference subset",
+  "snapshot_date": "2026-06-15",
+  "source": "Curated from the NIST CMVP validated-modules program lists (https://csrc.nist.gov/projects/cryptographic-module-validation-program/validated-modules). This is an OFFLINE cross-reference SUBSET of commonly-encountered modules, not the complete CMVP database. Operators may extend it.",
+  "fips_140_2_historical_date": "2026-09-21",
+  "notes": "On 2026-09-21 all remaining FIPS 140-2 modules move to the CMVP Historical list. Historical status means a module should not be included in NEW federal procurements; it is not revoked and may continue in legacy systems subject to a risk determination.",
+  "modules": [
+    {
+      "name": "OpenSSL FIPS Object Module 2.0",
+      "aliases": ["openssl fips object module 2.0", "openssl fom 2.0", "fom 2.0"],
+      "standard": "FIPS 140-2",
+      "status": "Historical",
+      "cert": "1747",
+      "note": "Legacy OpenSSL 1.0.2 FIPS module; already on the CMVP Historical list."
+    },
+    {
+      "name": "OpenSSL FIPS Provider 3.0",
+      "aliases": ["openssl fips provider 3.0", "openssl 3.0 fips", "openssl-3.0-fips"],
+      "standard": "FIPS 140-2",
+      "status": "Active",
+      "cert": "4282",
+      "note": "OpenSSL 3.0 FIPS provider, validated under FIPS 140-2 — moves to the Historical list on 2026-09-21."
+    },
+    {
+      "name": "BoringCrypto",
+      "aliases": ["boringcrypto", "boringssl"],
+      "standard": "FIPS 140-2",
+      "status": "Active",
+      "cert": null,
+      "note": "Google BoringCrypto; historically validated under FIPS 140-2."
+    },
+    {
+      "name": "wolfCrypt",
+      "aliases": ["wolfcrypt", "wolfssl"],
+      "standard": "FIPS 140-3",
+      "status": "Active",
+      "cert": null,
+      "note": "wolfCrypt holds FIPS 140-3 validation(s)."
+    },
+    {
+      "name": "Bouncy Castle FIPS Java API",
+      "aliases": ["bouncy castle fips", "bc-fips", "bouncycastle fips"],
+      "standard": "FIPS 140-3",
+      "status": "Active",
+      "cert": null,
+      "note": "Bouncy Castle FIPS distribution with FIPS 140-3 validation(s)."
+    }
+  ]
+}

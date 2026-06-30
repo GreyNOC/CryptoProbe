@@ -1,0 +1,44 @@
+id: nist-ir-8547
+title: "NIST IR 8547 (draft) — classical deprecation runway"
+mandate: "NIST IR 8547 (Initial Public Draft)"
+profile: general
+status: draft
+summary: >
+  General-enterprise reference tier. NIST IR 8547 (Initial Public Draft, Nov
+  2024) sets a transition timeline keyed to security STRENGTH: classical
+  asymmetric crypto (RSA, ECDSA, ECDH, DH, EdDSA) at 112-bit is deprecated after
+  2030 and disallowed after 2035; at >=128-bit it is disallowed after 2035 (no
+  deprecation step). This pack is advisory (the source is a DRAFT); findings are
+  emitted as WARN, not FAIL.
+default_citation: "https://nvlpubs.nist.gov/nistpubs/ir/2024/NIST.IR.8547.ipd.pdf"
+deadlines:
+  deprecated_112bit: "2030"
+  disallowed: "2035"
+rules:
+  - id: ir8547-classical-kex-runway
+    requirement: "Classical asymmetric key establishment is on the deprecation runway"
+    deadline: "2035"
+    citation: "https://nvlpubs.nist.gov/nistpubs/ir/2024/NIST.IR.8547.ipd.pdf"
+    severity: MEDIUM
+    fail_verdict: WARN
+    when: { fact: kex_kind, equals: "classical" }
+    assert: { fact: kex_kind, not_equals: "classical" }
+    observed: kex_group
+    fail_detail: >
+      Classical key establishment (RSA/ECDH/DH) is disallowed after 2035 — and
+      already deprecated after 2030 at the 112-bit strength tier — per NIST IR
+      8547 (DRAFT). Harvest-now-decrypt-later risk applies today regardless.
+
+  - id: ir8547-classical-sig-runway
+    requirement: "Classical certificate signatures are on the deprecation runway"
+    deadline: "2035"
+    citation: "https://nvlpubs.nist.gov/nistpubs/ir/2024/NIST.IR.8547.ipd.pdf"
+    severity: LOW
+    fail_verdict: WARN
+    when: { fact: sig_class, equals: "classical" }
+    assert: { fact: sig_class, not_equals: "classical" }
+    observed: cert_signature
+    fail_detail: >
+      Classical signatures (RSA/ECDSA/EdDSA) are disallowed after 2035 per NIST
+      IR 8547 (DRAFT). Signature forgery is not a harvest-now risk, so this is a
+      lower-urgency runway item than key establishment.

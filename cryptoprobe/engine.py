@@ -47,6 +47,7 @@ def run_scan(args, auth, targets: list[Target]) -> int:
     effective_rate = (auth.scope.rate_limit if auth.scope and auth.scope.rate_limit
                       else args.rate_limit)
     limiter = RateLimiter(effective_rate)
+    run_dt = datetime.now(timezone.utc)
     cap = handshake.capability()
     if not cap.available:
         log.warn(f"openssl unavailable ({cap.detail}); completed-handshake "
@@ -65,7 +66,7 @@ def run_scan(args, auth, targets: list[Target]) -> int:
         log.info(f"probing {t}")
         result = tlsverify.validate(t.host, t.port, timeout=args.timeout,
                                     do_completed=not args.no_completed_handshake)
-        _enrich(args, result, limiter)
+        _enrich(args, result, limiter, run_dt)
         results.append(result)
         _log_one(result)
 
@@ -73,7 +74,7 @@ def run_scan(args, auth, targets: list[Target]) -> int:
         log.warn("no targets probed")
         return EXIT_OK
 
-    run_meta = _run_meta(args, auth, cap, effective_rate)
+    run_meta = _run_meta(args, auth, cap, effective_rate, run_dt)
     doc = build_document(results, run_meta)
 
     _emit(args, doc, results)
@@ -84,34 +85,38 @@ def run_scan(args, auth, targets: list[Target]) -> int:
     return code if code else EXIT_OK
 
 
-def _enrich(args, result, limiter) -> None:
-    """Hook for downgrade/hybrid/conformance enrichment (later phases)."""
+def _enrich(args, result, limiter, run_dt) -> None:
+    """Downgrade/hybrid + conformance enrichment for one target."""
     if result.error:
         return
-    try:
-        from . import downgrade
-    except ImportError:
-        return
     if not args.no_downgrade:
+        from . import downgrade
         downgrade.assess(result, timeout=args.timeout, limiter=limiter)
-    try:
-        from . import conformance
-    except ImportError:
-        return
-    conformance.evaluate(result, profile=args.profile)
+    from . import conformance
+    conformance.evaluate(result, profile=args.profile, run_date=run_dt.date(),
+                         fips_module=getattr(args, "fips_module", None))
 
 
-def _run_meta(args, auth, cap, effective_rate) -> dict:
-    return {
+def _run_meta(args, auth, cap, effective_rate, run_dt) -> dict:
+    meta = {
         "tool": {"name": "GreyNOC CryptoProbe", "vendor": "GreyNOC",
                  "version": __version__},
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": run_dt.isoformat(),
         "authorization": auth.to_dict(),
         "profile": args.profile,
         "rate_limit_per_sec": effective_rate,
         "openssl": cap.to_dict(),
         "discipline": "authorized-testing-only;reproducible;no-fabrication",
     }
+    try:
+        from . import conformance
+        meta["policy"] = {
+            "fips_snapshot_date": conformance.fips_snapshot_date(),
+            "pack_hashes": conformance.pack_hashes(),
+        }
+    except ImportError:
+        pass
+    return meta
 
 
 def build_document(results, run_meta) -> dict:

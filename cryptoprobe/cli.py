@@ -81,6 +81,9 @@ def main(argv: list[str] | None = None) -> int:
     sp_scan.add_argument("--json", dest="json_out", metavar="FILE",
                          help="write machine findings JSON")
     sp_scan.add_argument("--sarif", metavar="FILE", help="write SARIF 2.1.0")
+    sp_scan.add_argument("--fips-module", metavar="NAME",
+                         help="cross-reference this CMVP module name against the "
+                              "bundled FIPS dataset (else module status is UNKNOWN)")
     sp_scan.add_argument("--no-downgrade", action="store_true",
                          help="skip the downgrade-resistance probe matrix")
     sp_scan.add_argument("--no-completed-handshake", action="store_true",

@@ -1,0 +1,69 @@
+id: omb-m-26-15
+title: "OMB M-26-15 — Execution of the Migration to Post-Quantum Cryptography"
+mandate: "OMB M-26-15"
+profile: civilian
+status: active
+summary: >
+  Post-quantum migration requirements for U.S. federal CIVILIAN executive-branch
+  agencies (dated 2026-06-24; explicitly excludes National Security Systems).
+  Appendix A approves FIPS 203 ML-KEM, FIPS 204 ML-DSA, and FIPS 205 SLH-DSA —
+  the last as a hash-based fallback. SLH-DSA being permitted here (but not under
+  CNSA 2.0) is the NSS-vs-civilian divergence CryptoProbe surfaces.
+default_citation: "https://www.whitehouse.gov/wp-content/uploads/2026/06/M-26-15-Execution-of-the-Migration-to-Post-Quantum-Cryptography.pdf"
+deadlines:
+  prioritized_migration: "2030-12-31"
+  full_migration: "2035"
+rules:
+  - id: omb-tls13
+    requirement: "Negotiate TLS 1.3 or a successor version"
+    mandate: "EO 14306"
+    deadline: "2030-01-02"
+    citation: "https://www.federalregister.gov/documents/2025/06/11/2025-10804/sustaining-select-efforts-to-strengthen-the-nations-cybersecurity-and-amending-executive-order-13694"
+    severity: HIGH
+    when: { fact: reachable, is_true: true }
+    assert: { fact: tls13, is_true: true }
+    observed: tls_version
+    fail_detail: >
+      EO 14306 directs federal non-NSS systems (via OMB) to support TLS 1.3 or a
+      successor, not later than 2030-01-02. This endpoint did not negotiate TLS 1.3.
+
+  - id: omb-kex-mlkem
+    requirement: "Key establishment must use ML-KEM (FIPS 203, any approved parameter set)"
+    deadline: "2030-12-31"
+    citation: "https://www.whitehouse.gov/wp-content/uploads/2026/06/M-26-15-Execution-of-the-Migration-to-Post-Quantum-Cryptography.pdf"
+    severity: CRITICAL
+    when: { fact: tls13, is_true: true }
+    assert: { fact: kex_ml_kem, in: ["ML-KEM-512", "ML-KEM-768", "ML-KEM-1024"] }
+    observed: kex_group
+    fail_detail: >
+      M-26-15 Appendix A approves FIPS 203 ML-KEM for key establishment. Unlike
+      CNSA 2.0 (which requires ML-KEM-1024), civilian guidance accepts any
+      approved ML-KEM parameter set, so an ML-KEM-768 hybrid is conformant here.
+
+  - id: omb-sig-pqc
+    requirement: "Certificate signatures must use an approved PQC algorithm (ML-DSA or SLH-DSA)"
+    deadline: "2030-12-31"
+    citation: "https://www.whitehouse.gov/wp-content/uploads/2026/06/M-26-15-Execution-of-the-Migration-to-Post-Quantum-Cryptography.pdf"
+    severity: HIGH
+    when: { fact: sig_class, present: true }
+    assert: { fact: sig_class, in: ["pqc", "composite"] }
+    observed: cert_signature
+    fail_detail: >
+      M-26-15 Appendix A approves FIPS 204 ML-DSA and FIPS 205 SLH-DSA for
+      signatures. The observed certificate uses a classical (Shor-broken)
+      signature.
+
+  - id: omb-slh-dsa-permitted
+    requirement: "SLH-DSA is permitted as a hash-based fallback signature"
+    citation: "https://www.whitehouse.gov/wp-content/uploads/2026/06/M-26-15-Execution-of-the-Migration-to-Post-Quantum-Cryptography.pdf"
+    severity: INFO
+    when:
+      all:
+        - { fact: sig_class, equals: "pqc" }
+        - { fact: sig_canonical, contains: "SLH-DSA" }
+    assert: { fact: sig_canonical, contains: "SLH-DSA" }
+    observed: cert_signature
+    pass_detail: >
+      SLH-DSA observed and PERMITTED for federal civilian systems (M-26-15
+      Appendix A, "robust fallback independent of lattice/code assumptions").
+      Note: this same observation is non-conformant under CNSA 2.0 (NSS).
