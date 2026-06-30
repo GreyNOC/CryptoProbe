@@ -1,0 +1,25 @@
+# GreyNOC CryptoProbe — example authorization scope (lab / DMZ profile).
+#
+# A scope file authorizes active probing and gates which targets may be touched.
+# Point a run at it with:  cryptoprobe scan --targets dmz.txt --scope scope.dmz.yaml
+# Its SHA-256 is recorded in the run manifest for provenance.
+#
+# This profile targets the GreyNOC DMZ synthetic cyber range
+# (https://github.com/GreyNOC/DMZ) — a controlled environment for validating
+# detections and tooling. Replace the operator/ticket and targets for a real
+# engagement. AUTHORIZED TESTING ONLY.
+
+authorization:
+  operator: greynoc-operator
+  ticket: GN-DMZ-LAB-0001
+  rate_limit: 5.0        # handshakes/sec — the lab tolerates a faster cadence
+
+targets:
+  - "*.dmz.greynoc.lab"        # any host in the synthetic range, any port
+  - tls.dmz.greynoc.lab:443
+  - ike.dmz.greynoc.lab:500
+  - 10.13.37.0/24             # the DMZ subnet
+
+notes: >
+  PQC migration validation against the GreyNOC DMZ synthetic environment.
+  Handshake negotiation and certificate inspection only.

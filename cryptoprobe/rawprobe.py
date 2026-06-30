@@ -180,6 +180,58 @@ def _parse_server_hello(body: bytes) -> tuple[bool, int | None, int | None, int 
         return False, None, None, None, None
 
 
+def _drain(buf: bytearray, handshake: bytearray, outcome: RawOutcome) -> bool:
+    """Drain whole TLS records from ``buf``; return True once a terminal message
+    (ServerHello/HRR or Alert) has been parsed into ``outcome``. Pure byte logic,
+    shared by the live socket loop and recorded-transcript replay."""
+    while True:
+        if len(buf) < 5:
+            return False
+        ctype = buf[0]
+        rec_len = struct.unpack_from(">H", buf, 3)[0]
+        if len(buf) < 5 + rec_len:
+            return False
+        payload = bytes(buf[5:5 + rec_len])
+        del buf[:5 + rec_len]
+        if ctype == _CT_CHANGE_CIPHER_SPEC:
+            continue
+        if ctype == _CT_ALERT:
+            lvl = payload[0] if payload else 0
+            desc = payload[1] if len(payload) > 1 else 0
+            outcome.alert = (lvl, desc)
+            return True
+        if ctype == _CT_HANDSHAKE:
+            handshake += payload
+            if len(handshake) >= 4:
+                hs_type = handshake[0]
+                hs_len = int.from_bytes(handshake[1:4], "big")
+                if len(handshake) >= 4 + hs_len:
+                    if hs_type == _HS_SERVER_HELLO:
+                        b = bytes(handshake[4:4 + hs_len])
+                        (outcome.is_hrr, outcome.negotiated_version,
+                         outcome.selected_group, outcome.server_share_len,
+                         outcome.cipher_suite) = _parse_server_hello(b)
+                        outcome.is_server_hello = outcome.negotiated_version is not None
+                        return True
+                    outcome.error = f"unexpected hs {hs_type}"
+                    return True
+        # other content types -> keep draining
+
+
+def parse_received(received: bytes,
+                   offered_groups: tuple[NamedGroup, ...] = ()) -> RawOutcome:
+    """Replay a recorded server response (no socket). Used for recorded-transcript
+    integration tests so classification is exercised without the network."""
+    outcome = RawOutcome(offered_groups=tuple(offered_groups))
+    buf = bytearray(received)
+    handshake = bytearray()
+    if not _drain(buf, handshake, outcome):
+        if outcome.error is None and outcome.alert is None:
+            outcome.error = "no ServerHello in transcript"
+    outcome.transcript = received
+    return outcome
+
+
 def _read_handshake(host: str, port: int, client_hello: bytes,
                     timeout: float, outcome: RawOutcome) -> None:
     """Send a ClientHello, capture the transcript, parse the first
@@ -204,41 +256,8 @@ def _read_handshake(host: str, port: int, client_hello: bytes,
                 received += chunk
                 buf += chunk
                 reads += 1
-                progress = True
-                while progress:
-                    progress = False
-                    if len(buf) < 5:
-                        break
-                    ctype = buf[0]
-                    rec_len = struct.unpack_from(">H", buf, 3)[0]
-                    if len(buf) < 5 + rec_len:
-                        break
-                    payload = bytes(buf[5:5 + rec_len])
-                    del buf[:5 + rec_len]
-                    progress = True
-                    if ctype == _CT_CHANGE_CIPHER_SPEC:
-                        continue
-                    if ctype == _CT_ALERT:
-                        lvl = payload[0] if payload else 0
-                        desc = payload[1] if len(payload) > 1 else 0
-                        outcome.alert = (lvl, desc)
-                        return
-                    if ctype == _CT_HANDSHAKE:
-                        handshake += payload
-                        if len(handshake) >= 4:
-                            hs_type = handshake[0]
-                            hs_len = int.from_bytes(handshake[1:4], "big")
-                            if len(handshake) >= 4 + hs_len:
-                                if hs_type == _HS_SERVER_HELLO:
-                                    b = bytes(handshake[4:4 + hs_len])
-                                    (outcome.is_hrr, outcome.negotiated_version,
-                                     outcome.selected_group, outcome.server_share_len,
-                                     outcome.cipher_suite) = _parse_server_hello(b)
-                                    outcome.is_server_hello = (
-                                        outcome.negotiated_version is not None)
-                                    return
-                                outcome.error = f"unexpected hs {hs_type}"
-                                return
+                if _drain(buf, handshake, outcome):
+                    return
             outcome.error = "no ServerHello"
     except (OSError, socket.timeout) as exc:
         outcome.error = f"{type(exc).__name__}: {exc}"

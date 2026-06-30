@@ -120,9 +120,30 @@ cryptoprobe policy list
 cryptoprobe policy show cnsa-2.0
 cryptoprobe policy verify
 
+# IKEv2 / IPsec PQC capability detection (honest NOT_YET_VALIDATED, v0.1.0)
+cryptoprobe ikev2 vpn.example.com --i-have-authorization OP-1234
+
 # Validate the toolchain against known-good public PQC endpoints
-cryptoprobe selftest
+cryptoprobe selftest            # add --offline to skip the network checks
 ```
+
+### Authorization & scope
+
+Active probing is refused without authorization. Either assert it inline with
+`--i-have-authorization OP-TICKET` (recorded verbatim in the manifest), or pass a
+`--scope scope.yaml` that names the operator/ticket and gates which targets may
+be touched (host, `host:port`, `*.glob`, or CIDR), e.g.:
+
+```yaml
+authorization: { operator: jdoe, ticket: OP-1234, rate_limit: 2.0 }
+targets:
+  - "*.lab.example.com"
+  - 10.0.0.0/24
+```
+
+The scope file's SHA-256 is recorded in the run manifest. A ready-made
+lab/DMZ profile is in [`examples/scope.dmz.yaml`](examples/scope.dmz.yaml),
+targeting the [GreyNOC DMZ](https://github.com/GreyNOC/DMZ) synthetic range.
 
 ## Outputs
 
@@ -139,6 +160,24 @@ byte-identical output except the explicit run timestamp.
 
 `0` ok · `2` verdicts at/above `--fail-on` (gate CI) · `3` active probe refused
 (no authorization) · `1` usage/runtime error.
+
+## Layout
+
+```
+cryptoprobe/
+  cli.py            argparse CLI (scan / attest / policy / ikev2 / selftest)
+  authz.py          authorization + scope gate          targets.py  target parsing
+  rawprobe.py       raw-socket TLS 1.3 ClientHello probe (controllable offers)
+  handshake.py      completed handshake via openssl (capability-detected)
+  tlsverify.py      one target -> ProbeResult            model.py    result contract
+  downgrade.py      downgrade matrix + hybrid correctness
+  conformance.py    declarative tri-state engine         packs/*.yaml + PROVENANCE
+  cbom.py           CycloneDX 1.6 ingest / enrich / emit
+  manifest.py       run provenance     attest.py  ML-DSA-87 / Ed25519 signing
+  report.py  sarif.py  engine.py  ikev2.py  selftest.py
+tests/              unit, recorded-transcript replay, golden-file determinism
+examples/scope.dmz.yaml   packaging/  (portable binary)
+```
 
 ## Scope & limitations (v0.1.0)
 

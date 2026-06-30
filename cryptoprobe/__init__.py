@@ -19,7 +19,8 @@ from .primitives import (
 )
 from . import (
     log, primitives, model, authz, targets, rawprobe, handshake, tlsverify,
-    downgrade, conformance, cbom, manifest, attest, report, sarif, ikev2, engine,
+    downgrade, conformance, cbom, manifest, attest, report, sarif, ikev2,
+    engine, selftest,
 )
 
 __all__ = [
@@ -28,5 +29,5 @@ __all__ = [
     "SigClass", "CipherSuite",
     "log", "primitives", "model", "authz", "targets", "rawprobe", "handshake",
     "tlsverify", "downgrade", "conformance", "cbom", "manifest", "attest",
-    "report", "sarif", "ikev2", "engine",
+    "report", "sarif", "ikev2", "engine", "selftest",
 ]
