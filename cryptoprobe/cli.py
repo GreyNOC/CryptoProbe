@@ -19,7 +19,6 @@ CryptoScan: 0 ok, 2 when verdicts at/above ``--fail-on`` are present (CI gate),
 from __future__ import annotations
 
 import argparse
-import sys
 
 from . import __version__
 from . import log
