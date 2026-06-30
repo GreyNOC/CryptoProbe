@@ -1,0 +1,49 @@
+# Python build / cache artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.tox/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Packaging / release outputs
+portable/
+release-assets/
+*.spec
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# CryptoProbe run outputs (operators write these next to runs)
+*.cbom.json
+probe.cbom.json
+run.json
+attestation.json
+attestation.sig
+report.md
+findings.json
+transcripts/
+
+# Operator-supplied signing keys must never be committed
+*.key
+*.priv
+ml-dsa.key
+ed25519.key
+
+# Test fixtures are tracked even when they match output/key patterns above.
+!tests/fixtures/**
+
+# Editor / OS noise
+.claude/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

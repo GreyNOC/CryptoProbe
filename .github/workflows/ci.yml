@@ -1,0 +1,44 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.10", "3.13"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[validation]"
+          python -m pip install pytest ruff
+      - name: Lint
+        run: ruff check cryptoprobe
+      - name: Unit tests (no network)
+        run: python -m pytest -q tests/
+      - name: Smoke — version
+        run: cryptoprobe --version
+      - name: Smoke — refuses unauthorized active probe (exit 3)
+        shell: bash
+        run: |
+          set +e
+          cryptoprobe scan example.com:443 --format json
+          code=$?
+          set -e
+          if [ "$code" != "3" ]; then
+            echo "expected exit 3 (unauthorized), got $code"; exit 1
+          fi
+      - name: Smoke — policy packs verify
+        run: cryptoprobe policy verify

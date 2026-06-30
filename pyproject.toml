@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "greynoc-cryptoprobe"
+version = "0.1.0"
+description = "GreyNOC CryptoProbe — active PQC migration validator: TLS handshake probing, downgrade-resistance, signed CBOM attestation"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary — GreyNOC" }
+authors = [{ name = "GreyNOC" }]
+keywords = ["pqc", "post-quantum", "tls", "downgrade", "cnsa", "cbom", "cyclonedx", "attestation", "security"]
+dependencies = [
+    "cryptography>=42",
+    "PyYAML>=6",
+]
+
+# CBOM schema validation is optional; the conformance/probe pipeline runs
+# without it. Mirrors CryptoScan's [validation] extra so the siblings install
+# the same way.
+[project.optional-dependencies]
+validation = ["cyclonedx-python-lib[json-validation]>=8", "jsonschema>=4"]
+
+# Console scripts mirror CryptoScan's three-tier alias pattern
+# (cryptoscan / gscan / gs  ->  cryptoprobe / gprobe / gp).
+[project.scripts]
+cryptoprobe = "cryptoprobe.cli:main"
+gprobe = "cryptoprobe.cli:main"
+gp = "cryptoprobe.cli:main"
+
+[tool.setuptools]
+packages = ["cryptoprobe"]
+
+# The conformance packs, FIPS/CMVP dataset and provenance manifest ship inside
+# the wheel so an air-gapped / Termux field operator has them with no network.
+[tool.setuptools.package-data]
+cryptoprobe = ["packs/*.yaml", "packs/*.json"]
+
+[tool.ruff]
+target-version = "py310"
+
+[tool.ruff.lint.per-file-ignores]
+# Tests import modules next to the section that uses them, for readability.
+"tests/*" = ["E402"]
