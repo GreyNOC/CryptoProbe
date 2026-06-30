@@ -58,9 +58,9 @@ rules:
     citation: "https://www.nsa.gov/Resources/Commercial-Solutions-for-Classified-Program/CNSA-2-0-Algorithms/"
     severity: MEDIUM
     when: { fact: bulk_cipher, present: true }
-    assert: { fact: bulk_bits, gte: 256 }
+    assert: { fact: bulk_cipher, equals: "AES-256" }
     observed: bulk_cipher
-    fail_detail: "CNSA 2.0 requires AES-256; a sub-256-bit bulk cipher was negotiated."
+    fail_detail: "CNSA 2.0 requires AES-256 specifically; a non-AES-256 bulk cipher (e.g. AES-128 or ChaCha20) was negotiated."
 
   - id: cnsa-sha384
     requirement: "Hashing must be SHA-384 or SHA-512"

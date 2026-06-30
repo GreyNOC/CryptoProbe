@@ -87,6 +87,23 @@ def test_aes128_fails_cnsa():
     assert v["cnsa-sha384"] is ConformanceVerdict.FAIL
 
 
+def test_chacha20_fails_cnsa_aes256():
+    # finding #4: CNSA requires AES-256 specifically, not any 256-bit cipher.
+    r = _result("SecP384r1MLKEM1024", SigClass.CLASSICAL, "ECDSA",
+                "ecdsa-with-SHA256", cipher="TLS_CHACHA20_POLY1305_SHA256")
+    v = _by_rule(conformance.evaluate(r, profile="nss", run_date=date(2026, 6, 29)))
+    assert v["cnsa-aes256"] is ConformanceVerdict.FAIL
+
+
+def test_unclassifiable_signature_is_not_fabricated_fail():
+    # finding #7: an observed cert whose signature can't be classified must not
+    # produce a "classical" FAIL — the sig rules become N/A (unobserved class).
+    r = _result("X25519MLKEM768", SigClass.UNKNOWN, None, "weird-unknown-sig-oid")
+    v = _by_rule(conformance.evaluate(r, profile="both", run_date=date(2026, 6, 29)))
+    assert v["omb-sig-pqc"] is ConformanceVerdict.NOT_APPLICABLE
+    assert v["cnsa-sig-mldsa87"] is ConformanceVerdict.NOT_APPLICABLE
+
+
 def test_fips_module_date_logic():
     r = _result("X25519MLKEM768", SigClass.CLASSICAL, "ECDSA", "ecdsa-with-SHA256")
 

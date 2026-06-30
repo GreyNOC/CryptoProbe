@@ -28,7 +28,9 @@ from pathlib import Path
 
 import yaml
 
-from .primitives import Severity, NamedGroup, CipherSuite, CIPHER_SUITE_FACTS
+from .primitives import (
+    Severity, NamedGroup, CipherSuite, CIPHER_SUITE_FACTS, SigClass,
+)
 from .model import ConformanceVerdict, ConformanceFinding
 
 _PACKS_DIR = Path(__file__).resolve().parent / "packs"
@@ -147,7 +149,11 @@ def _facts(result, fips_module: str | None) -> dict:
         f["bulk_cipher"] = f["bulk_bits"] = f["hash"] = f["hash_bits"] = None
 
     if result.cert:
-        f["sig_class"] = result.cert.sig_class.value
+        # An observed-but-unclassifiable signature maps to None (unobserved) so a
+        # `sig_class present` gate yields N/A rather than a fabricated "classical"
+        # FAIL. cert_signature still carries the raw algorithm for display.
+        sc = result.cert.sig_class
+        f["sig_class"] = None if sc is SigClass.UNKNOWN else sc.value
         f["sig_canonical"] = result.cert.sig_canonical or result.cert.sig_algo
         f["cert_signature"] = result.cert.sig_algo
         f["cert_key_algo"] = result.cert.key_algo

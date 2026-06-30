@@ -4,7 +4,7 @@
   "tool_version": "0.1.0",
   "fips_snapshot_date": "2026-06-15",
   "hashes": {
-    "cnsa-2.0.yaml": "001c0c29de089f45ba7142687fc68367e04aa971bb206410e388cba37ba9a59c",
+    "cnsa-2.0.yaml": "557a6b64be540e9a4e883b2ce9485fbed4a0f2e08c3a0998c0b53eb4a26f2c80",
     "fips-140-3.yaml": "164ae38445aa2ac6ff12133476830ef2303f365c5771be04699a38dbaf925760",
     "fips-cmvp.json": "a9dc9f4d1223580da7f6782a5432e2c12338319849ad1d1483e277bb94dac65e",
     "nist-ir-8547.yaml": "7deb1bf5f89660945b3f4aaa81b279bc7175ce7ae89488683e26f514fb358187",
