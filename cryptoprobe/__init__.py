@@ -17,9 +17,16 @@ from .primitives import (
     Severity, QuantumRisk, Primitive, NamedGroup, GroupKind, SigClass,
     CipherSuite,
 )
+from . import (
+    log, primitives, model, authz, targets, rawprobe, handshake, tlsverify,
+    downgrade, conformance, cbom, manifest, attest, report, sarif, engine,
+)
 
 __all__ = [
     "__version__",
     "Severity", "QuantumRisk", "Primitive", "NamedGroup", "GroupKind",
     "SigClass", "CipherSuite",
+    "log", "primitives", "model", "authz", "targets", "rawprobe", "handshake",
+    "tlsverify", "downgrade", "conformance", "cbom", "manifest", "attest",
+    "report", "sarif", "engine",
 ]

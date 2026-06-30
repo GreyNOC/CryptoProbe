@@ -199,13 +199,10 @@ def _emit(args, doc, results) -> None:
         except ImportError:
             log.warn("CBOM emitter not available yet")
     if getattr(args, "run_out", None):
-        try:
-            from . import manifest
-            man = manifest.build(results, doc["run"], args)
-            log.write_text(args.run_out, json.dumps(man, indent=2))
-            log.ok(f"Run manifest written: {args.run_out}")
-        except ImportError:
-            log.warn("manifest builder not available yet")
+        from . import manifest
+        man = manifest.build(doc, results, args)
+        log.write_text(args.run_out, json.dumps(man, indent=2))
+        log.ok(f"Run manifest written: {args.run_out}")
 
 
 def _human_fallback(doc: dict) -> str:
