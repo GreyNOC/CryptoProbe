@@ -114,6 +114,17 @@ def main(argv: list[str] | None = None) -> int:
     sp_pol.add_argument("pack", nargs="?", help="pack id for `show` (e.g. cnsa-2.0)")
     sp_pol.add_argument("--format", choices=["human", "json"], default="human")
 
+    # --- ikev2 (capability detection only) ----------------------------------
+    sp_ike = sub.add_parser(
+        "ikev2", help="IKEv2/IPsec PQC capability detection (NOT_YET_VALIDATED)")
+    sp_ike.add_argument("target", metavar="HOST[:PORT]")
+    sp_ike.add_argument("-v", "--verbose", action="count", default=0)
+    sp_ike.add_argument("--scope", metavar="FILE")
+    sp_ike.add_argument("--i-have-authorization", dest="authorization",
+                        metavar="OP-TICKET")
+    sp_ike.add_argument("--timeout", type=float, default=5.0, metavar="SEC")
+    sp_ike.add_argument("--format", choices=["human", "json"], default="human")
+
     # --- selftest -----------------------------------------------------------
     sp_self = sub.add_parser(
         "selftest", help="validate against known-good PQC endpoints (network)")
@@ -133,6 +144,8 @@ def main(argv: list[str] | None = None) -> int:
             return _cmd_attest(args)
         if args.cmd == "policy":
             return _cmd_policy(args)
+        if args.cmd == "ikev2":
+            return _cmd_ikev2(args)
         if args.cmd == "selftest":
             return _cmd_selftest(args)
     except KeyboardInterrupt:
@@ -214,6 +227,19 @@ def _cmd_policy(args) -> int:
         log.warn(f"conformance engine not available yet: {exc}")
         return EXIT_ERROR
     return conformance.run_policy_cli(args)
+
+
+def _cmd_ikev2(args) -> int:
+    from . import authz, ikev2
+    try:
+        auth = authz.resolve(args.authorization, args.scope)
+    except authz.AuthorizationError as exc:
+        log.warn(str(exc))
+        return EXIT_UNAUTHORIZED
+    if not auth.granted:
+        log.warn(auth.reason)
+        return EXIT_UNAUTHORIZED
+    return ikev2.run_cli(args, auth)
 
 
 def _cmd_selftest(args) -> int:
