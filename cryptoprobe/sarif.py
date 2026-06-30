@@ -27,19 +27,21 @@ _SEC_SEV = {Severity.CRITICAL: "9.5", Severity.HIGH: "7.5", Severity.MEDIUM: "5.
 
 def _result(rule_id: str, severity: Severity, message: str, target: str,
             help_uri: str | None) -> tuple[dict, dict]:
+    # A network endpoint is not a source file, so use a logicalLocation (valid
+    # SARIF for results not tied to a file) rather than a physicalLocation with a
+    # non-anchorable tls:// URI. security-severity lives on the RESULT (the
+    # canonical, per-finding location) and NOT on the rule — a rule shared by
+    # findings of different severity must not carry a single conflicting value.
     res = {
         "ruleId": rule_id,
         "level": _LEVEL[severity],
         "message": {"text": message},
         "locations": [{
-            "physicalLocation": {
-                "artifactLocation": {"uri": f"tls://{target}"}
-            }
+            "logicalLocations": [{"fullyQualifiedName": target, "kind": "module"}]
         }],
-        "properties": {"security-severity": _SEC_SEV[severity]},
+        "properties": {"security-severity": _SEC_SEV[severity], "target": target},
     }
-    rule = {"id": rule_id,
-            "properties": {"security-severity": _SEC_SEV[severity]}}
+    rule = {"id": rule_id}
     if help_uri:
         rule["helpUri"] = help_uri
     return res, rule
@@ -87,8 +89,7 @@ def build_sarif(results, run_meta: dict) -> dict:
             sarif_results.append(res)
             rules[rid] = rule
 
-    sarif_results.sort(key=lambda r: (r["locations"][0]["physicalLocation"]
-                                      ["artifactLocation"]["uri"], r["ruleId"]))
+    sarif_results.sort(key=lambda r: (r["properties"]["target"], r["ruleId"]))
     return {
         "$schema": SCHEMA,
         "version": SARIF_VERSION,

@@ -286,6 +286,12 @@ def build(results, run_meta: dict, cbom_in: str | None = None) -> dict:
     # Index carried endpoint components so we can enrich rather than duplicate.
     carried_by_ref = {c.get("bom-ref"): c for c in carried}
 
+    # Index carried algorithm components by (parameterSetIdentifier, location) so
+    # CryptoProbe enriches an existing CryptoScan kex-group component instead of
+    # emitting a second component for the same group at the same endpoint (its
+    # bom-ref differs from CryptoScan's opaque hash, so bom-ref dedup is not enough).
+    algo_idx = _algorithm_index(carried)
+
     new_components: list[dict] = []
     for r in ordered:
         if r.error:
@@ -300,11 +306,22 @@ def build(results, run_meta: dict, cbom_in: str | None = None) -> dict:
                 ep["cryptoProperties"]["protocolProperties"])
         else:
             new_components.append(ep)
-        for maker in (_kex_component, _cert_component):
-            comp = maker(r)
-            if comp and comp["bom-ref"] not in carried_by_ref:
-                new_components.append(comp)
-                carried_by_ref[comp["bom-ref"]] = comp
+
+        kex = _kex_component(r)
+        if kex is not None:
+            psid = (kex["cryptoProperties"]["algorithmProperties"]
+                    .get("parameterSetIdentifier"))
+            carried_algo = algo_idx.get((str(psid).lower(), r.target)) if psid else None
+            if carried_algo is not None:
+                _merge_props(carried_algo, kex["properties"])
+            elif kex["bom-ref"] not in carried_by_ref:
+                new_components.append(kex)
+                carried_by_ref[kex["bom-ref"]] = kex
+
+        cert = _cert_component(r)
+        if cert is not None and cert["bom-ref"] not in carried_by_ref:
+            new_components.append(cert)
+            carried_by_ref[cert["bom-ref"]] = cert
 
     components = _dedupe_sorted(carried + new_components)
 
@@ -334,6 +351,23 @@ def build(results, run_meta: dict, cbom_in: str | None = None) -> dict:
         },
         "components": components,
     }
+
+
+def _algorithm_index(carried: list[dict]) -> dict:
+    """Index carried algorithm components by (parameterSetIdentifier, location)."""
+    idx: dict = {}
+    for c in carried:
+        cp = c.get("cryptoProperties", {})
+        if cp.get("assetType") != "algorithm":
+            continue
+        psid = cp.get("algorithmProperties", {}).get("parameterSetIdentifier")
+        if not psid:
+            continue
+        for occ in c.get("evidence", {}).get("occurrences", []):
+            loc = occ.get("location")
+            if loc:
+                idx[(str(psid).lower(), loc)] = c
+    return idx
 
 
 def _merge_props(component: dict, new_props: list[dict]) -> None:

@@ -93,6 +93,50 @@ def test_ingest_enrich_roundtrip_matches_cryptoscan_endpoint():
     assert "greynoc:probe.downgradeVerdict" in pnames
 
 
+def test_no_duplicate_kex_component_on_ingest():
+    # finding #29: CryptoScan already has an algorithm component for the group;
+    # CryptoProbe must enrich it, not emit a second one with a different bom-ref.
+    fixture = FIXTURES / "cryptoscan-tls.cbom.json"
+    if not fixture.is_file():
+        pytest.skip("cryptoscan-tls fixture not present")
+    r = _result("pq.cloudflareresearch.com")
+    conformance.evaluate(r, profile="both", run_date=date(2026, 6, 29))
+    doc = cbom.build([r], _run_meta(), cbom_in=str(fixture))
+    kex = [c for c in doc["components"]
+           if c.get("name") == "X25519MLKEM768"
+           and c.get("cryptoProperties", {}).get("assetType") == "algorithm"]
+    assert len(kex) == 1  # enriched, not duplicated
+    pnames = {p["name"] for p in kex[0].get("properties", [])}
+    assert "greynoc:probe.groupKind" in pnames  # CryptoProbe enrichment merged in
+
+
+def test_reenrich_merge_policy(tmp_path):
+    # finding #22: pin the merge asymmetry on re-enrich.
+    import json
+    r = _result()
+    conformance.evaluate(r, profile="both", run_date=date(2026, 6, 29))
+    doc1 = cbom.build([r], _run_meta())
+    ep = next(c for c in doc1["components"]
+              if c["bom-ref"].startswith("crypto/protocol/"))
+    for p in ep["properties"]:
+        if p["name"] == "greynoc:probe.negotiatedGroup":
+            p["value"] = "STALE-GROUP"
+    ep["cryptoProperties"]["protocolProperties"]["version"] = "1.2"
+    f = tmp_path / "stale.cbom.json"
+    f.write_text(json.dumps(doc1), encoding="utf-8")
+
+    doc2 = cbom.build([r], _run_meta(), cbom_in=str(f))
+    eps = [c for c in doc2["components"]
+           if c["bom-ref"].startswith("crypto/protocol/")]
+    assert len(eps) == 1  # no duplication
+    ep2 = eps[0]
+    ng = next(p["value"] for p in ep2["properties"]
+              if p["name"] == "greynoc:probe.negotiatedGroup")
+    assert ng == "STALE-GROUP"  # property name-collision -> carried wins (_merge_props)
+    # protocolProperties is dict-updated -> refreshed
+    assert ep2["cryptoProperties"]["protocolProperties"]["version"] == "1.3"
+
+
 def test_ingest_rejects_non_cyclonedx(tmp_path):
     bad = tmp_path / "bad.json"
     bad.write_text('{"hello": "world"}', encoding="utf-8")
