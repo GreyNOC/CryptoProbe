@@ -251,12 +251,17 @@ def _eval_fips(module: str | None, run_date: date, dataset: dict, rule: dict):
 
 
 def _fips_lookup(module: str, dataset: dict) -> dict | None:
+    """Exact (case-insensitive) match against a module's name or curated aliases.
+
+    Substring matching is deliberately avoided: a generic token like "openssl" or
+    "3.0" must NOT match a specific CMVP entry and flip a conformance verdict —
+    it falls through to None -> UNKNOWN. If more than one entry matches, return
+    None (ambiguous) rather than silently picking the first by array order.
+    """
     m = module.strip().lower()
-    for entry in dataset.get("modules", []):
-        names = [entry["name"].lower()] + [a.lower() for a in entry.get("aliases", [])]
-        if any(m == n or n in m or m in n for n in names):
-            return entry
-    return None
+    matches = [e for e in dataset.get("modules", [])
+               if m in ([e["name"].lower()] + [a.lower() for a in e.get("aliases", [])])]
+    return matches[0] if len(matches) == 1 else None
 
 
 def _eval_rule(pack: dict, rule: dict, facts: dict, run_date: date,

@@ -103,6 +103,9 @@ def test_fips_module_date_logic():
     # Unknown / unobserved module: UNKNOWN, never guessed.
     assert fips_verdict(None, date(2026, 10, 1)) is ConformanceVerdict.UNKNOWN
     assert fips_verdict("nonexistent-module", date(2026, 10, 1)) is ConformanceVerdict.UNKNOWN
+    # Generic substring must NOT match a specific CMVP entry (finding #16).
+    assert fips_verdict("openssl", date(2026, 10, 1)) is ConformanceVerdict.UNKNOWN
+    assert fips_verdict("3.0", date(2026, 10, 1)) is ConformanceVerdict.UNKNOWN
 
 
 def test_unreachable_kex_facts_are_unknown_not_fail():

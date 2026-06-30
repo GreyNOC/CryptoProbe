@@ -88,9 +88,9 @@ def _chk_attestation_ed25519():
         attest.generate_keypair("ed25519", key)
         man = {"run": {"timestamp": "x"}, "summary": {}, "targets": []}
         att = attest.sign(man, key, "ed25519")
-        ok, _ = attest.verify(att)
+        ok, _, _ = attest.verify(att)
         att["manifest"]["summary"]["tampered"] = True
-        tampered_ok, _ = attest.verify(att)
+        tampered_ok, _, _ = attest.verify(att)
     return (ok and not tampered_ok), "Ed25519 sign+verify ok; tamper rejected"
 
 
@@ -103,8 +103,10 @@ def _chk_attestation_ml_dsa():
         attest.generate_keypair("ml-dsa-87", key)
         man = {"run": {"timestamp": "x"}, "summary": {}, "targets": []}
         att = attest.sign(man, key, "ml-dsa-87")
-        ok, _ = attest.verify(att)
-    return ok, "ML-DSA-87 sign+verify ok (dogfooded PQC)"
+        pub = str(Path(d) / "mldsa.pub")
+        Path(pub).write_bytes(attest._ml_dsa_public_pem(key))
+        ok, _, authed = attest.verify(att, pub)
+    return (ok and authed), "ML-DSA-87 sign+verify ok (dogfooded PQC)"
 
 
 def _offline_checks():

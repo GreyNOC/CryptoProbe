@@ -32,26 +32,32 @@ def _roundtrip(algorithm, tmp_path):
     attest.generate_keypair(algorithm, str(priv))
     man = _manifest()
     att = attest.sign(man, str(priv), algorithm)
-    ok, detail = attest.verify(att)
-    assert ok, detail
+    # embedded-key check: cryptographically ok, but NOT authenticated (#3)
+    ok, _, authenticated = attest.verify(att)
+    assert ok and authenticated is False
     # tamper the embedded manifest -> verification must fail
     tampered = copy.deepcopy(att)
     tampered["manifest"]["summary"]["targets"] = 999
-    ok2, _ = attest.verify(tampered)
+    ok2, _, _ = attest.verify(tampered)
     assert ok2 is False
-    return att
+    return att, str(priv)
 
 
 def test_ed25519_sign_verify_tamper(tmp_path):
-    att = _roundtrip("ed25519", tmp_path)
+    att, priv = _roundtrip("ed25519", tmp_path)
     assert att["signing"]["algorithm"] == "Ed25519"
+    # with the operator's trusted public key, it authenticates (exit-0 path)
+    pub = tmp_path / "ed.pub"
+    pub.write_bytes(attest._ed25519_public_pem(priv))
+    ok, _, authenticated = attest.verify(att, str(pub))
+    assert ok and authenticated is True
 
 
 def test_ml_dsa_87_sign_verify_tamper(tmp_path):
     cap = handshake.capability()
     if not (cap.available and cap.supports_ml_dsa):
         pytest.skip("openssl with ML-DSA not available")
-    att = _roundtrip("ml-dsa-87", tmp_path)
+    att, _ = _roundtrip("ml-dsa-87", tmp_path)
     assert att["signing"]["algorithm"] == "ML-DSA-87"
     # the signature is the real ML-DSA-87 size (~4627 bytes)
     import base64
@@ -67,8 +73,8 @@ def test_verify_with_wrong_key_fails(tmp_path):
     other_pub_pem = attest.generate_keypair("ed25519", str(other))
     other_pub = tmp_path / "other.pub"
     other_pub.write_bytes(other_pub_pem)
-    ok, _ = attest.verify(att, str(other_pub))
-    assert ok is False
+    ok, _, authenticated = attest.verify(att, str(other_pub))
+    assert ok is False and authenticated is False
 
 
 def test_manifest_binds_findings_reproducibly():

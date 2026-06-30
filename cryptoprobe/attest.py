@@ -172,25 +172,35 @@ def sign(manifest: dict, key_path: str, signer: str = "ml-dsa-87") -> dict:
     }
 
 
-def verify(attestation: dict, pub_key_path: str | None = None) -> tuple[bool, str]:
+def verify(attestation: dict, pub_key_path: str | None = None) -> tuple[bool, str, bool]:
+    """Verify an attestation.
+
+    Returns (ok, detail, authenticated). ``ok`` means the signature is
+    cryptographically valid over the (hash-bound) manifest. ``authenticated`` is
+    True ONLY when the operator supplied the trusted public key via ``pub_key_path``
+    — a check against the attestation's own EMBEDDED key proves internal
+    consistency, not authenticity (the embedded key is attacker-controllable), so
+    it is never reported as authenticated.
+    """
     manifest = attestation.get("manifest")
     if not isinstance(manifest, dict):
-        return False, "attestation has no embedded manifest"
+        return False, "attestation has no embedded manifest", False
     data = manifest_mod.canonical_bytes(manifest)
     digest = hashlib.sha256(data).hexdigest()
     if attestation.get("manifest_sha256") != digest:
-        return False, "manifest hash mismatch — the manifest was altered after signing"
+        return False, "manifest hash mismatch — the manifest was altered after signing", False
     try:
         sig = base64.b64decode(attestation["signature_b64"])
     except (KeyError, ValueError):
-        return False, "missing or malformed signature"
-    if pub_key_path:
+        return False, "missing or malformed signature", False
+    using_operator_key = bool(pub_key_path)
+    if using_operator_key:
         pub_pem = Path(pub_key_path).read_bytes()
         src = f"operator key {pub_key_path}"
     else:
         pem = attestation.get("public_key_pem")
         if not pem:
-            return False, "no public key supplied (--pub-key) and none embedded"
+            return False, "no public key supplied (--pub-key) and none embedded", False
         pub_pem = pem.encode("ascii")
         src = "embedded public key"
     alg = attestation.get("signing", {}).get("algorithm", "")
@@ -200,10 +210,20 @@ def verify(attestation: dict, pub_key_path: str | None = None) -> tuple[bool, st
         elif alg.lower() == "ed25519":
             ok = _ed25519_verify(pub_pem, data, sig)
         else:
-            return False, f"unknown signing algorithm: {alg}"
+            return False, f"unknown signing algorithm: {alg}", False
     except AttestError as exc:
-        return False, str(exc)
-    return (ok, f"{alg} signature {'valid' if ok else 'INVALID'} ({src})")
+        return False, str(exc), False
+    authenticated = ok and using_operator_key
+    if not ok:
+        return False, f"{alg} signature INVALID ({src})", False
+    if authenticated:
+        return True, f"{alg} signature valid ({src})", True
+    return (True,
+            f"{alg} signature is internally consistent but the signer is "
+            f"UNAUTHENTICATED — verified against the attestation's own embedded "
+            f"key, which is attacker-controllable. Supply --pub-key with the "
+            f"operator's trusted public key to authenticate.",
+            False)
 
 
 # --- CLI -------------------------------------------------------------------
@@ -248,9 +268,13 @@ def _cli_verify(args) -> int:
     except (OSError, json.JSONDecodeError) as exc:
         log.warn(f"could not read attestation: {exc}")
         return 1
-    ok, detail = verify(att, args.pub_key)
-    if ok:
+    ok, detail, authenticated = verify(att, args.pub_key)
+    if ok and authenticated:
         log.ok(detail)
         return 0
+    if ok and not authenticated:
+        # Self-consistent but not authenticated — must not read as a clean pass.
+        log.warn(detail)
+        return 2
     log.warn(detail)
     return 2
