@@ -19,7 +19,7 @@ jobs:
         run: |
           tag="${GITHUB_REF_NAME#v}"
           py=$(python -c "import tomllib;print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
-          ver=$(python -c "import re;print(re.search(r'\"([^\"]+)\"',open('cryptoprobe/_version.py').read()).group(1))")
+          ver=$(python -c "import re;print(re.search(r'__version__\s*=\s*\"([^\"]+)\"',open('cryptoprobe/_version.py').read()).group(1))")
           echo "tag=$tag pyproject=$py _version=$ver"
           test "$tag" = "$py" && test "$tag" = "$ver"
       - name: Build wheel + sdist
